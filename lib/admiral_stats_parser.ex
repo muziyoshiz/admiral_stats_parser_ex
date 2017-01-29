@@ -1,0 +1,2 @@
+defmodule AdmiralStatsParser do
+end
