@@ -7,14 +7,15 @@ defmodule AdmiralStatsParser.Mixfile do
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+     preferred_cli_env: [espec: :test]]
   end
 
   # Configuration for the OTP application
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :timex]]
   end
 
   # Dependencies can be Hex packages:
@@ -27,6 +28,10 @@ defmodule AdmiralStatsParser.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      # https://hexdocs.pm/timex/getting-started.html
+      {:timex, "~> 3.0"},
+      {:espec, "~> 1.2.2", only: :test}
+    ]
   end
 end
