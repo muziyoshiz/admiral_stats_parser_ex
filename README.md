@@ -1,6 +1,6 @@
 # AdmiralStatsParser
 
-**TODO: Add description**
+Parser for admiral stats JSON data exported from kancolle-arcade.net (Elixir version)
 
 ## Installation
 
@@ -22,3 +22,8 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
     end
     ```
 
+## Test
+
+```
+$ mix espec
+```
