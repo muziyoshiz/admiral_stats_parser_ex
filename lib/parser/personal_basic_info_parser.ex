@@ -3,6 +3,7 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
 
   """
 
+  alias AdmiralStatsParser.Parser.ParserUtil
   alias AdmiralStatsParser.Model.PersonalBasicInfo
 
   # API version ごとの必須キーを格納したマップ
@@ -24,8 +25,8 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
       "bucket" => &is_integer/1,
       "level" => &is_integer/1,
       "room_item_coin" => &is_integer/1,
-      "result_point" => &AdmiralStatsParser.Parser.PersonalBasicInfoParser.is_string/1,
-      "rank" => &AdmiralStatsParser.Parser.PersonalBasicInfoParser.is_string/1,
+      "result_point" => &ParserUtil.is_string/1,
+      "rank" => &ParserUtil.is_string/1,
       "title_id" => &is_integer/1,
       "material_max" => &is_integer/1,
       "strategy_point" => &is_integer/1,
@@ -36,59 +37,72 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
   @optional_keys %{
     1 => %{
       # 元のデータには必ず提督名が含まれるが、データ解析の上では不要のため、オプションとする
-      "admiral_name" => &AdmiralStatsParser.Parser.PersonalBasicInfoParser.is_string/1,
+      "admiral_name" => &ParserUtil.is_string/1,
     },
     2 => %{
-      "admiral_name" => &AdmiralStatsParser.Parser.PersonalBasicInfoParser.is_string/1,
+      "admiral_name" => &ParserUtil.is_string/1,
     }
   }
 
-  def is_string(term) do
-    is_binary(term) and String.printable?(term)
-  end
-
-  def snake_case_to_camel_case(snake_case) do
-    [head | tails ] = String.split(snake_case, "_")
-    tail = Enum.map(tails, &String.capitalize/1) |> Enum.join
-    head <> tail
-  end
-
   @doc """
+  与えられた JSON 文字列をデコードし、構造体に格納して返します。
 
+  ## パラメータ
+
+    - json: JSON 文字列
+    - api_version: API version
+
+  ## 返り値
+
+    {:ok, PersonalBasicInfo.t} |
+    {:error, error_msg}
   """
   def parse(json, api_version) do
-    # JSON のデコード（キー名は camelCase）
-    {res, items} = Poison.decode(json)
-    case res do
-      :ok ->
-        items
+    case Poison.decode(json) do
+      {:ok, json_obj} ->
+        json_obj
         |> validate_keys(api_version)
         |> create_struct(api_version)
-      :error ->
+      {:error, {:invalid, msg}} ->
+        {:error, "Failed to decode json: " <> msg}
+      {:error, _} ->
         {:error, "Failed to decode json"}
     end
   end
 
-  # キーの検査
-  def validate_keys(items, api_version) do
+  @doc """
+  与えられた JSON オブジェクトに含まれるキーおよび値を検査します。
+
+  ## パラメータ
+
+    - json_obj: JSON を Poison.decode/1 でデコードした結果
+    - api_version: API version
+
+  ## 返り値
+
+    {:ok, json_obj} |
+    {:error, error_msg}
+  """
+  def validate_keys(json_obj, api_version) do
     # 必須のキーだが、items に含まれないキーのリスト
     missing_man_keys = Enum.filter(@mandatory_keys[api_version], fn {key, _} ->
-      camel_case_key = snake_case_to_camel_case(key)
-      !Map.has_key?(items, camel_case_key)
+      json_key = ParserUtil.to_camel_case(key)
+      !Map.has_key?(json_obj, json_key)
     end)
 
     # 必須のキーで、items に含まれるが、型が合わないキーのリスト
     invalid_man_keys = Enum.filter(@mandatory_keys[api_version], fn {key, key_validator} ->
-      camel_case_key = snake_case_to_camel_case(key)
-      Map.has_key?(items, camel_case_key) and !key_validator.(items[camel_case_key])
+      json_key = ParserUtil.to_camel_case(key)
+      Map.has_key?(json_obj, json_key) and !key_validator.(json_obj[json_key])
     end)
 
     # 任意のキーで、items に含まれるが、型が合わないキーのリスト
     invalid_opt_keys = Enum.filter(@optional_keys[api_version], fn {key, key_validator} ->
-      camel_case_key = snake_case_to_camel_case(key)
-      Map.has_key?(items, camel_case_key) and !key_validator.(items[camel_case_key])
+      json_key = ParserUtil.to_camel_case(key)
+      Map.has_key?(json_obj, json_key) and !key_validator.(json_obj[json_key])
     end)
 
+    # validation に失敗した場合、一番最初に発見されたエラーのみを返す
     cond do
       !Enum.empty?(missing_man_keys) ->
         [{key, _} | _ ] = missing_man_keys
@@ -100,7 +114,7 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
         [{key, _} | _ ] = invalid_opt_keys
         {:error, "Optional key #{key} is invalid"}
       true ->
-        {:ok, items}
+        {:ok, json_obj}
     end
   end
 
@@ -124,7 +138,7 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
   def aaa(result, items, keys) do
     [ {key, _} | keys_tail ] = keys
     # キー名を snake_case から camelCase に変換する
-    camel_case_key = snake_case_to_camel_case(key)
+    camel_case_key = ParserUtil.to_camel_case(key)
     atom = String.to_atom(key)
     result = Map.put(result, atom, items[camel_case_key])
     aaa(result, items, keys_tail)
@@ -137,7 +151,7 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
   def bbb(result, items, keys) do
     [ {key, _} | keys_tail ] = keys
     # キー名を snake_case から camelCase に変換する
-    camel_case_key = snake_case_to_camel_case(key)
+    camel_case_key = ParserUtil.to_camel_case(key)
 
     if Map.has_key?(items, camel_case_key) do
       atom = String.to_atom(key)
