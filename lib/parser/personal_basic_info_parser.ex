@@ -83,7 +83,7 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
     {:ok, json_obj} |
     {:error, error_msg}
   """
-  def validate_keys(json_obj, api_version) do
+  defp validate_keys(json_obj, api_version) do
     # 必須のキーだが、items に含まれないキーのリスト
     missing_man_keys = Enum.filter(@mandatory_keys[api_version], fn {key, _} ->
       json_key = ParserUtil.to_camel_case(key)
@@ -118,46 +118,88 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
     end
   end
 
-  def create_struct(validation_result, api_version) do
-    cond do
-      {:ok, items} = validation_result ->
+  @doc """
+  JSON オブジェクトに含まれる値を格納した PersonalBasicInfo 構造体を返します。
+
+  ## パラメータ
+
+    - validation_res: validate_keys 関数の返り値
+    - api_version: API version
+
+  ## 返り値
+
+    {:ok, PersonalBasicInfo.t} |
+    {:error, error_msg}
+  """
+  defp create_struct(validation_res, api_version) do
+    case validation_res do
+      {:ok, json_obj} ->
         # 結果を格納する構造体
-        result = %PersonalBasicInfo{}
-        result = aaa(result, items, Map.to_list(@mandatory_keys[api_version]))
-        result = bbb(result, items, Map.to_list(@optional_keys[api_version]))
-        {:ok, result}
-      true ->
-        validation_result
+        obj = %PersonalBasicInfo{} |>
+              set_mandatory_values(json_obj, Map.to_list(@mandatory_keys[api_version])) |>
+              set_optional_values(json_obj, Map.to_list(@optional_keys[api_version]))
+        {:ok, obj}
+      _ ->
+        validation_res
     end
   end
 
-  def aaa(result, _items, []) do
-    result
+  def set_mandatory_values(obj, _json_obj, []) do
+    obj
   end
 
-  def aaa(result, items, keys) do
+  @doc """
+  与えられた構造体に、与えられた JSON オブジェクトの内容を格納した結果を返します。
+  json_obj には、keys が示すキーがすべて含まれている必要があります。
+
+  ## パラメータ
+
+    - obj: 返り値として使われる構造体
+    - json_obj: JSON オブジェクト
+    - keys: {キー名, バリデーション関数} のリスト
+
+  ## 返り値
+
+  JSON オブジェクトの内容を格納した構造体
+  """
+  def set_mandatory_values(obj, json_obj, keys) do
     [ {key, _} | keys_tail ] = keys
-    # キー名を snake_case から camelCase に変換する
-    camel_case_key = ParserUtil.to_camel_case(key)
+    json_key = ParserUtil.to_camel_case(key)
     atom = String.to_atom(key)
-    result = Map.put(result, atom, items[camel_case_key])
-    aaa(result, items, keys_tail)
+    obj = Map.put(obj, atom, json_obj[json_key])
+    set_mandatory_values(obj, json_obj, keys_tail)
   end
 
-  def bbb(result, _items, []) do
-    result
+  def set_optional_values(obj, _json_obj, []) do
+    obj
   end
 
-  def bbb(result, items, keys) do
+  @doc """
+  与えられた構造体に、与えられた JSON オブジェクトの内容を格納した結果を返します。
+  json_obj には、keys が示すキーがすべて含まれている必要はありません。
+
+  ## パラメータ
+
+    - obj: 返り値として使われる構造体
+    - json_obj: JSON オブジェクト
+    - keys: {キー名, バリデーション関数} のリスト
+
+  ## 返り値
+
+  JSON オブジェクトの内容を格納した構造体
+  """
+  def set_optional_values(obj, json_obj, keys) do
     [ {key, _} | keys_tail ] = keys
-    # キー名を snake_case から camelCase に変換する
-    camel_case_key = ParserUtil.to_camel_case(key)
 
-    if Map.has_key?(items, camel_case_key) do
-      atom = String.to_atom(key)
-      result = Map.put(result, atom, items[camel_case_key])
+    json_key = ParserUtil.to_camel_case(key)
+
+    case Map.has_key?(json_obj, json_key) do
+      true ->
+        atom = String.to_atom(key)
+        obj = Map.put(obj, atom, json_obj[json_key])
+        set_optional_values(obj, json_obj, keys_tail)
+      false ->
+        set_optional_values(obj, json_obj, keys_tail)
     end
-
-    bbb(result, items, keys_tail)
   end
 end
