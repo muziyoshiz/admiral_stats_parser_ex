@@ -52,6 +52,19 @@ defmodule AdmiralStatsParser do
   end
 
   # 基本情報をパースします。
+  @doc """
+  基本情報をパースし、その結果を格納した構造体を返します。
+
+  ## パラメータ
+
+    - json: JSON 文字列
+    - api_version: API version
+
+  ## 返り値
+
+    {:ok, PersonalBasicInfo.t} |
+    {:error, error_msg}
+  """
   def parse_personal_basic_info(json, api_version) do
     cond do
       api_version == 1 ->

@@ -61,6 +61,7 @@ defmodule AdmiralStatsParserSpec do
         """
       {res, result} = AdmiralStatsParser.parse_personal_basic_info(json, 1)
 
+      expect res |> to(eq(:ok))
       expect result.admiral_name |> to(eq("ABCDEFGH"))
       expect result.fuel |> to(eq(838))
       expect result.ammo |> to(eq(974))
@@ -84,6 +85,7 @@ defmodule AdmiralStatsParserSpec do
         """
       {res, result} = AdmiralStatsParser.parse_personal_basic_info(json, 1)
 
+      expect res |> to(eq(:ok))
       expect result.admiral_name |> to(be_nil())
       expect result.fuel |> to(eq(838))
       expect result.ammo |> to(eq(974))
@@ -109,6 +111,7 @@ defmodule AdmiralStatsParserSpec do
           """
         {res, result} = AdmiralStatsParser.parse_personal_basic_info(json, version)
 
+        expect res |> to(eq(:ok))
         expect result.admiral_name |> to(be_nil())
         expect result.fuel |> to(eq(6750))
         expect result.ammo |> to(eq(6183))
@@ -135,6 +138,7 @@ defmodule AdmiralStatsParserSpec do
           """
         {res, result} = AdmiralStatsParser.parse_personal_basic_info(json, version)
 
+        expect res |> to(eq(:ok))
         expect result.admiral_name |> to(eq("ABCDEFGH"))
         expect result.fuel |> to(eq(6750))
         expect result.ammo |> to(eq(6183))

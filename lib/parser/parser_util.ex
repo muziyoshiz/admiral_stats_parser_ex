@@ -34,4 +34,63 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
     tail = Enum.map(tails, &String.capitalize/1) |> Enum.join
     head <> tail
   end
+
+  def set_mandatory_values(obj, _json_obj, []) do
+    obj
+  end
+
+  @doc """
+  与えられた構造体に、与えられた JSON オブジェクトの内容を格納した結果を返します。
+  json_obj には、keys が示すキーがすべて含まれている必要があります。
+
+  ## パラメータ
+
+    - obj: 返り値として使われる構造体
+    - json_obj: JSON オブジェクト
+    - keys: 構造体のフィールド名のリスト
+
+  ## 返り値
+
+  JSON オブジェクトの内容を格納した構造体
+  """
+  def set_mandatory_values(obj, json_obj, keys) do
+    [ key | keys_tail ] = keys
+    json_key = to_camel_case(key)
+    atom = String.to_atom(key)
+    obj = Map.put(obj, atom, json_obj[json_key])
+    set_mandatory_values(obj, json_obj, keys_tail)
+  end
+
+  def set_optional_values(obj, _json_obj, []) do
+    obj
+  end
+
+  @doc """
+  与えられた構造体に、与えられた JSON オブジェクトの内容を格納した結果を返します。
+  json_obj には、keys が示すキーがすべて含まれている必要はありません。
+
+  ## パラメータ
+
+    - obj: 返り値として使われる構造体
+    - json_obj: JSON オブジェクト
+    - keys: 構造体のフィールド名のリスト
+
+  ## 返り値
+
+  JSON オブジェクトの内容を格納した構造体
+  """
+  def set_optional_values(obj, json_obj, keys) do
+    [ key | keys_tail ] = keys
+
+    json_key = to_camel_case(key)
+
+    case Map.has_key?(json_obj, json_key) do
+      true ->
+        atom = String.to_atom(key)
+        obj = Map.put(obj, atom, json_obj[json_key])
+        set_optional_values(obj, json_obj, keys_tail)
+      false ->
+        set_optional_values(obj, json_obj, keys_tail)
+    end
+  end
 end
