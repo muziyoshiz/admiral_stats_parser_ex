@@ -29,6 +29,8 @@ defmodule AdmiralStatsParser.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
+      # https://github.com/devinus/poison
+      {:poison, "~> 3.1"},
       # https://github.com/bitwalker/timex
       # https://hexdocs.pm/timex/getting-started.html
       {:timex, "~> 3.0"},

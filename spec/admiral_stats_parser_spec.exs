@@ -59,7 +59,7 @@ defmodule AdmiralStatsParserSpec do
       json = """
         {"admiralName":"ABCDEFGH","fuel":838,"ammo":974,"steel":482,"bauxite":129,"bucket":7,"level":5,"roomItemCoin":0}
         """
-      result = AdmiralStatsParser.parse_personal_basic_info(json, 1)
+      {res, result} = AdmiralStatsParser.parse_personal_basic_info(json, 1)
 
       expect result.admiral_name |> to(eq("ABCDEFGH"))
       expect result.fuel |> to(eq(838))
@@ -82,7 +82,7 @@ defmodule AdmiralStatsParserSpec do
       json = """
         {"fuel":838,"ammo":974,"steel":482,"bauxite":129,"bucket":7,"level":5,"roomItemCoin":0}
         """
-      result = AdmiralStatsParser.parse_personal_basic_info(json, 1)
+      {res, result} = AdmiralStatsParser.parse_personal_basic_info(json, 1)
 
       expect result.admiral_name |> to(be_nil())
       expect result.fuel |> to(eq(838))
@@ -107,7 +107,7 @@ defmodule AdmiralStatsParserSpec do
         json = """
           {"fuel":6750,"ammo":6183,"steel":7126,"bauxite":6513,"bucket":46,"level":32,"roomItemCoin":82,"resultPoint":"3571","rank":"圏外","titleId":7,"materialMax":7200,"strategyPoint":915}
           """
-        result = AdmiralStatsParser.parse_personal_basic_info(json, version)
+        {res, result} = AdmiralStatsParser.parse_personal_basic_info(json, version)
 
         expect result.admiral_name |> to(be_nil())
         expect result.fuel |> to(eq(6750))
@@ -131,9 +131,9 @@ defmodule AdmiralStatsParserSpec do
     it "returns PersonalBasicInfo" do
       for version <- 2..5 do
         json = """
-          {"admiralName":"ABCDEFGH","fuel":6750,"ammo":6183,"steel":7126,"bauxite":6513,"bucket":46,"level":32,"roomItemCoin":82,"resultPoint":"3571","rank":"圏外","titleId":7,"materialMax":7200,"strategyPoint":915}'
+          {"admiralName":"ABCDEFGH","fuel":6750,"ammo":6183,"steel":7126,"bauxite":6513,"bucket":46,"level":32,"roomItemCoin":82,"resultPoint":"3571","rank":"圏外","titleId":7,"materialMax":7200,"strategyPoint":915}
           """
-        result = AdmiralStatsParser.parse_personal_basic_info(json, version)
+        {res, result} = AdmiralStatsParser.parse_personal_basic_info(json, version)
 
         expect result.admiral_name |> to(eq("ABCDEFGH"))
         expect result.fuel |> to(eq(6750))
