@@ -3,22 +3,6 @@ defmodule AdmiralStatsParser.Model.PersonalBasicInfo do
   基本情報
   """
 
-  # 階級を表す数値と、階級名の対応関係
-  # 新米少佐
-  # 中堅少佐
-  # 少佐
-  # 新米中佐
-  # 中佐
-  # 大佐
-  # 少将
-  # 7: 中将
-  # 大将
-  # 元帥
-  # 集計中
-  @titles %{
-    7 => "中将",
-  }
-
   # 提督名
   defstruct admiral_name: nil,
 

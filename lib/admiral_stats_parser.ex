@@ -51,7 +51,6 @@ defmodule AdmiralStatsParser do
     end
   end
 
-  # 基本情報をパースします。
   @doc """
   基本情報をパースし、その結果を格納した構造体を返します。
 
@@ -65,12 +64,36 @@ defmodule AdmiralStatsParser do
     {:ok, PersonalBasicInfo.t} |
     {:error, error_msg}
   """
-  def parse_personal_basic_info(json, api_version) do
+  def parse_personal_basic_info(json, version) do
     cond do
-      api_version == 1 ->
+      version == 1 ->
         AdmiralStatsParser.Parser.PersonalBasicInfoParser.parse(json, 1)
-      Enum.member?(2..5, api_version) ->
+      Enum.member?(2..5, version) ->
         AdmiralStatsParser.Parser.PersonalBasicInfoParser.parse(json, 2)
+      true ->
+        {:error, "unsupported API version"}
+    end
+  end
+
+  @doc """
+  艦娘図鑑をパースし、その結果を格納した構造体のリストを返します。
+
+  ## パラメータ
+
+    - json: JSON 文字列
+    - api_version: API version
+
+  ## 返り値
+
+    {:ok, [TcBookInfo.t]} |
+    {:error, error_msg}
+  """
+  def parse_tc_book_info(json, version) do
+    cond do
+      version == 1 ->
+        AdmiralStatsParser.Parser.TcBookInfoParser.parse(json, 1)
+      Enum.member?(2..5, version) ->
+        AdmiralStatsParser.Parser.TcBookInfoParser.parse(json, 2)
       true ->
         {:error, "unsupported API version"}
     end

@@ -19,6 +19,29 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
   end
 
   @doc """
+  与えられた引数が、表示可能な文字列のリストの場合に true を返します。
+
+  ## パラメータ
+
+    - term: 検査対象
+
+  ## 返り値
+
+    boolean
+  """
+  def is_string_list(term) do
+    cond do
+      is_list(term) ->
+        case Enum.count(term) == 0 do
+          true -> true
+          false -> Enum.count(Enum.reject(term, &is_string/1)) == 0
+        end
+      true ->
+        false
+    end
+  end
+
+  @doc """
   snake_case で書かれたフィールド名を、JSON に書かれている camelCase（先頭は小文字）に変換します。
 
   ## パラメータ

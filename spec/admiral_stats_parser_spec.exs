@@ -155,4 +155,85 @@ defmodule AdmiralStatsParserSpec do
       end
     end
   end
+
+  describe "parse_tc_book_info(json, 1)" do
+    it "returns TcBookInfo[]" do
+      json = """
+        [{"bookNo":1,"shipClass":"","shipClassIndex":-1,"shipType":"","shipName":"未取得","cardIndexImg":"","cardImgList":[],"variationNum":0,"acquireNum":0},{"bookNo":2,"shipClass":"長門型","shipClassIndex":2,"shipType":"戦艦","shipName":"陸奥","cardIndexImg":"s/tc_2_tjpm66z1epc6.jpg","cardImgList":["s/tc_2_tjpm66z1epc6.jpg","","","","",""],"variationNum":6,"acquireNum":1}]
+        """
+
+      {res, results} = AdmiralStatsParser.parse_tc_book_info(json, 1)
+
+      expect res |> to(eq(:ok))
+      expect Enum.count(results) |> to(eq(2))
+
+      result = Enum.at(results, 0)
+      expect result.book_no |> to(eq(1))
+      expect result.ship_class |> to(eq(""))
+      expect result.ship_class_index |> to(eq(-1))
+      expect result.ship_type |> to(eq(""))
+      expect result.ship_name |> to(eq("未取得"))
+      expect result.card_index_img |> to(eq(""))
+      expect result.card_img_list |> to(eq([]))
+      expect result.variation_num |> to(eq(0))
+      expect result.acquire_num |> to(eq(0))
+      expect result.lv |> to(be_nil())
+      expect result.status_img |> to(be_nil())
+
+      result = Enum.at(results, 1)
+      expect result.book_no |> to(eq(2))
+      expect result.ship_class |> to(eq("長門型"))
+      expect result.ship_class_index |> to(eq(2))
+      expect result.ship_type |> to(eq("戦艦"))
+      expect result.ship_name |> to(eq("陸奥"))
+      expect result.card_index_img |> to(eq("s/tc_2_tjpm66z1epc6.jpg"))
+      expect result.card_img_list |> to(eq(["s/tc_2_tjpm66z1epc6.jpg","","","","",""]))
+      expect result.variation_num |> to(eq(6))
+      expect result.acquire_num |> to(eq(1))
+      expect result.lv |> to(be_nil())
+      expect result.status_img |> to(be_nil())
+    end
+  end
+
+  # 艦娘図鑑は version 2 〜 5 で仕様が同じ
+  describe ".parse_tc_book_info(json, 2..5)" do
+    it "returns TcBookInfo[]" do
+      for version <- 2..5 do
+        json = """
+          [{"bookNo":1,"shipClass":"長門型","shipClassIndex":1,"shipType":"戦艦","shipName":"長門","cardIndexImg":"s/tc_1_d7ju63kolamj.jpg","cardImgList":["","","s/tc_1_gk42czm42s3p.jpg","","",""],"variationNum":6,"acquireNum":1,"lv":23,"statusImg":["i/i_d7ju63kolamj_n.png"]},{"bookNo":5,"shipClass":"","shipClassIndex":-1,"shipType":"","shipName":"未取得","cardIndexImg":"","cardImgList":[],"variationNum":0,"acquireNum":0,"lv":0,"statusImg":[]}]
+          """
+
+        {res, results} = AdmiralStatsParser.parse_tc_book_info(json, version)
+
+        expect res |> to(eq(:ok))
+        expect Enum.count(results) |> to(eq(2))
+
+        result = Enum.at(results, 0)
+        expect result.book_no |> to(eq(1))
+        expect result.ship_class |> to(eq("長門型"))
+        expect result.ship_class_index |> to(eq(1))
+        expect result.ship_type |> to(eq("戦艦"))
+        expect result.ship_name |> to(eq("長門"))
+        expect result.card_index_img |> to(eq("s/tc_1_d7ju63kolamj.jpg"))
+        expect result.card_img_list |> to(eq(["","","s/tc_1_gk42czm42s3p.jpg","","",""]))
+        expect result.variation_num |> to(eq(6))
+        expect result.acquire_num |> to(eq(1))
+        expect result.lv |> to(eq(23))
+        expect result.status_img |> to(eq(["i/i_d7ju63kolamj_n.png"]))
+
+        result = Enum.at(results, 1)
+        expect result.book_no |> to(eq(5))
+        expect result.ship_class |> to(eq(""))
+        expect result.ship_class_index |> to(eq(-1))
+        expect result.ship_type |> to(eq(""))
+        expect result.ship_name |> to(eq("未取得"))
+        expect result.card_index_img |> to(eq(""))
+        expect result.card_img_list |> to(eq([]))
+        expect result.variation_num |> to(eq(0))
+        expect result.acquire_num |> to(eq(0))
+        expect result.lv |> to(eq(0))
+        expect result.status_img |> to(eq([]))
+      end
+    end
+  end
 end

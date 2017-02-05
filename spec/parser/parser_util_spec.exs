@@ -25,9 +25,33 @@ defmodule AdmiralStats.Parser.ParserUtilSpec do
     it "returns false" do
       expect is_string(1) |> to(be_false())
       expect is_string('') |> to(be_false())
-      expect is_string(true)  |> to(be_false())
-      expect is_string(false)  |> to(be_false())
-      expect is_string(nil)  |> to(be_false())
+      expect is_string(true) |> to(be_false())
+      expect is_string(false) |> to(be_false())
+      expect is_string(nil) |> to(be_false())
+    end
+  end
+
+  describe "is_string_list(term)" do
+    it "returns true" do
+      expect is_string_list([]) |> to(be_true())
+      expect is_string_list([""]) |> to(be_true())
+      expect is_string_list(["1"]) |> to(be_true())
+      expect is_string_list(["ABC"]) |> to(be_true())
+      expect is_string_list(["日本語"]) |> to(be_true())
+      expect is_string_list(["1", "ABC", "日本語"]) |> to(be_true())
+
+      # 空のリストとみなされるため true
+      expect is_string_list('') |> to(be_true())
+    end
+
+    it "returns false" do
+      expect is_string_list(1) |> to(be_false())
+      expect is_string_list("") |> to(be_false())
+      expect is_string_list(true) |> to(be_false())
+      expect is_string_list(false) |> to(be_false())
+      expect is_string_list(nil) |> to(be_false())
+      expect is_string_list([1]) |> to(be_false())
+      expect is_string_list(["ABC", 1, "日本語"]) |> to(be_false())
     end
   end
 
