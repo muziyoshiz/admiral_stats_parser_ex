@@ -35,6 +35,88 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
     head <> tail
   end
 
+  @doc """
+  与えられた JSON オブジェクトに、必要なキーが、正しい型で含まれているかどうかを検査します。
+
+  複数のエラーがある場合は、最初に発見されたエラーのみをエラーメッセージで通知します。
+
+  ## パラメータ
+
+    - json_obj: JSON オブジェクト
+    - mandatory_keys: 必須のキー名（snake_case）と、検査のための関数のマップ
+    - optional_keys: オプションのキー名（snake_case）と、検査のための関数のマップ
+
+  ## 返り値
+
+    {:ok, json_obj} |
+    {:error, error_msg}
+  """
+  # 与えられた JSON オブジェクトに含まれるキーおよび値を検査します。
+  def validate_keys(json_obj, mandatory_keys, optional_keys) do
+    # 必須のキーだが、items に含まれないキーのリスト
+    missing_man_keys = Enum.filter(mandatory_keys, fn {key, _} ->
+      json_key = to_camel_case(key)
+      !Map.has_key?(json_obj, json_key)
+    end)
+
+    # 必須のキーで、items に含まれるが、型が合わないキーのリスト
+    invalid_man_keys = Enum.filter(mandatory_keys, fn {key, key_validator} ->
+      json_key = to_camel_case(key)
+      Map.has_key?(json_obj, json_key) and !key_validator.(json_obj[json_key])
+    end)
+
+    # 任意のキーで、items に含まれるが、型が合わないキーのリスト
+    invalid_opt_keys = Enum.filter(optional_keys, fn {key, key_validator} ->
+      json_key = to_camel_case(key)
+      Map.has_key?(json_obj, json_key) and !key_validator.(json_obj[json_key])
+    end)
+
+    # validation に失敗した場合、一番最初に発見されたエラーのみを返す
+    cond do
+      !Enum.empty?(missing_man_keys) ->
+        [{key, _} | _ ] = missing_man_keys
+        {:error, "Mandatory key #{key} does not exist"}
+      !Enum.empty?(invalid_man_keys) ->
+        [{key, _} | _ ] = invalid_man_keys
+        {:error, "Mandatory key #{key} is invalid"}
+      !Enum.empty?(invalid_opt_keys) ->
+        [{key, _} | _ ] = invalid_opt_keys
+        {:error, "Optional key #{key} is invalid"}
+      true ->
+        {:ok, json_obj}
+    end
+  end
+
+  @doc """
+  JSON オブジェクトに含まれる値を格納した構造体を返します。
+
+  validation_res がエラーの場合は、validation_res をそのまま返します。
+
+  ## パラメータ
+
+    - validation_res: validate_keys 関数の返り値
+    - obj: 返り値を格納する構造体
+    - mandatory_keys: 必須のキー名（snake_case）と、検査のための関数のマップ
+    - optional_keys: オプションのキー名（snake_case）と、検査のための関数のマップ
+
+  ## 返り値
+
+    {:ok, obj} |
+    {:error, error_msg}
+  """
+  def create_struct(validation_res, obj, mandatory_keys, optional_keys) do
+    case validation_res do
+      {:ok, json_obj} ->
+        # 結果を格納する構造体
+        obj = obj |>
+              set_mandatory_values(json_obj, Map.keys(mandatory_keys)) |>
+              set_optional_values(json_obj, Map.keys(optional_keys))
+        {:ok, obj}
+      _ ->
+        validation_res
+    end
+  end
+
   def set_mandatory_values(obj, _json_obj, []) do
     obj
   end
@@ -51,7 +133,7 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
 
   ## 返り値
 
-  JSON オブジェクトの内容を格納した構造体
+    JSON オブジェクトの内容を格納した構造体
   """
   def set_mandatory_values(obj, json_obj, keys) do
     [ key | keys_tail ] = keys
@@ -77,7 +159,7 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
 
   ## 返り値
 
-  JSON オブジェクトの内容を格納した構造体
+    JSON オブジェクトの内容を格納した構造体
   """
   def set_optional_values(obj, json_obj, keys) do
     [ key | keys_tail ] = keys

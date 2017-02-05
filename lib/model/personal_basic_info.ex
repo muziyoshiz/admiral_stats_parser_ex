@@ -21,6 +21,7 @@ defmodule AdmiralStatsParser.Model.PersonalBasicInfo do
 
   # 提督名
   defstruct admiral_name: nil,
+
     # 燃料
     fuel: nil,
 
