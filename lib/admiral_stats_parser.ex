@@ -3,6 +3,10 @@ defmodule AdmiralStatsParser do
   kancolle-arcade.net からエクスポートした JSON データをパースするためのモジュールです。
   """
 
+  alias AdmiralStatsParser.Parser.PersonalBasicInfoParser
+  alias AdmiralStatsParser.Parser.TcBookInfoParser
+  alias AdmiralStatsParser.Parser.CharacterListInfoParser
+
   # 各 API version の開始時刻
   # 艦これアーケードは朝 7:00 から稼働するため、開始時刻は 7:00 であると想定する。
   @start_of_v2 Timex.parse!("2016-06-30T07:00:00+09:00", "{ISO:Extended}")
@@ -57,7 +61,7 @@ defmodule AdmiralStatsParser do
   ## パラメータ
 
     - json: JSON 文字列
-    - api_version: API version
+    - version: API version
 
   ## 返り値
 
@@ -67,9 +71,9 @@ defmodule AdmiralStatsParser do
   def parse_personal_basic_info(json, version) do
     cond do
       version == 1 ->
-        AdmiralStatsParser.Parser.PersonalBasicInfoParser.parse(json, 1)
+        PersonalBasicInfoParser.parse(json, 1)
       Enum.member?(2..5, version) ->
-        AdmiralStatsParser.Parser.PersonalBasicInfoParser.parse(json, 2)
+        PersonalBasicInfoParser.parse(json, 2)
       true ->
         {:error, "unsupported API version"}
     end
@@ -81,7 +85,7 @@ defmodule AdmiralStatsParser do
   ## パラメータ
 
     - json: JSON 文字列
-    - api_version: API version
+    - version: API version
 
   ## 返り値
 
@@ -91,9 +95,37 @@ defmodule AdmiralStatsParser do
   def parse_tc_book_info(json, version) do
     cond do
       version == 1 ->
-        AdmiralStatsParser.Parser.TcBookInfoParser.parse(json, 1)
+        TcBookInfoParser.parse(json, 1)
       Enum.member?(2..5, version) ->
-        AdmiralStatsParser.Parser.TcBookInfoParser.parse(json, 2)
+        TcBookInfoParser.parse(json, 2)
+      true ->
+        {:error, "unsupported API version"}
+    end
+  end
+
+  @doc """
+  艦娘一覧をパースし、その結果を格納した構造体のリストを返します。
+
+  ## パラメータ
+
+    - json: JSON 文字列
+    - version: API version
+
+  ## 返り値
+
+    {:ok, [CharacterListInfo.t]} |
+    {:error, error_msg}
+  """
+  def parse_character_list_info(json, version) do
+    cond do
+      version == 1 ->
+        {:error, "API version 1 does not support character list info"}
+      version == 2 ->
+        CharacterListInfoParser.parse(json, 1)
+      Enum.member?(3..4, version) ->
+        CharacterListInfoParser.parse(json, 2)
+      version == 5 ->
+        CharacterListInfoParser.parse(json, 3)
       true ->
         {:error, "unsupported API version"}
     end

@@ -196,7 +196,7 @@ defmodule AdmiralStatsParserSpec do
   end
 
   # 艦娘図鑑は version 2 〜 5 で仕様が同じ
-  describe ".parse_tc_book_info(json, 2..5)" do
+  describe "parse_tc_book_info(json, 2..5)" do
     it "returns TcBookInfo[]" do
       for version <- 2..5 do
         json = """
@@ -234,6 +234,230 @@ defmodule AdmiralStatsParserSpec do
         expect result.lv |> to(eq(0))
         expect result.status_img |> to(eq([]))
       end
+    end
+  end
+
+  # API version 1 には艦娘一覧が存在しなかった
+  describe "parse_character_list_info(json, 1)" do
+    it "returns {:error, error_msg}" do
+      json = """
+        [
+          {"bookNo":11,"lv":20,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":0,"shipName":"吹雪","statusImg":"i/i_u6jw00e3ey3p_n.png"},{"bookNo":85,"lv":36,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":0,"shipName":"朝潮","statusImg":"i/i_69ex6r4uutp3_n.png"},
+          {"bookNo":85,"lv":36,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":1,"shipName":"朝潮改","statusImg":"i/i_umacfn9qcwp1_n.png"}
+        ]
+        """
+
+      {res, error_msg} = AdmiralStatsParser.parse_character_list_info(json, 1)
+      expect res |> to(eq(:error))
+      expect error_msg |> to(eq("API version 1 does not support character list info"))
+    end
+  end
+
+  describe "parse_character_list_info(json, 2)" do
+    it "returns CharacterListInfo[]" do
+      json = """
+        [
+          {"bookNo":11,"lv":20,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":0,"shipName":"吹雪","statusImg":"i/i_u6jw00e3ey3p_n.png"},
+          {"bookNo":85,"lv":36,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":0,"shipName":"朝潮","statusImg":"i/i_69ex6r4uutp3_n.png"},
+          {"bookNo":85,"lv":36,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":1,"shipName":"朝潮改","statusImg":"i/i_umacfn9qcwp1_n.png"}
+        ]
+        """
+
+      {res, results} = AdmiralStatsParser.parse_character_list_info(json, 2)
+
+      expect res |> to(eq(:ok))
+      expect results.size |> to(eq(3))
+
+      result = Enum.at(results, 0)
+      expect result.book_no |> to(eq(11))
+      expect result.lv |> to(eq(20))
+      expect result.ship_type |> to(eq("駆逐艦"))
+      expect result.ship_sort_no |> to(eq(1800))
+      expect result.remodel_lv |> to(eq(0))
+      expect result.ship_name |> to(eq("吹雪"))
+      expect result.status_img |> to(eq("i/i_u6jw00e3ey3p_n.png"))
+
+      result = Enum.at(results, 1)
+      expect result.book_no |> to(eq(85))
+      expect result.lv |> to(eq(36))
+      expect result.ship_type |> to(eq("駆逐艦"))
+      expect result.ship_sort_no |> to(eq(1800))
+      expect result.remodel_lv |> to(eq(0))
+      expect result.ship_name |> to(eq("朝潮"))
+      expect result.status_img |> to(eq("i/i_69ex6r4uutp3_n.png"))
+
+      result = Enum.at(results, 2)
+      expect result.book_no |> to(eq(85))
+      expect result.lv |> to(eq(36))
+      expect result.ship_type |> to(eq("駆逐艦"))
+      expect result.ship_sort_no |> to(eq(1800))
+      expect result.remodel_lv |> to(eq(1))
+      expect result.ship_name |> to(eq("朝潮改"))
+      expect result.status_img |> to(eq("i/i_umacfn9qcwp1_n.png"))
+    end
+  end
+
+  # 艦娘一覧は version 3 〜 4 で仕様が同じ
+  describe "parse_character_list_info(json, 3..4)" do
+    it "returns CharacterListInfo[]" do
+      for version <- 3..4 do
+        json = """
+          [
+            {"bookNo":11,"lv":20,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":0,"shipName":"吹雪","statusImg":"i/i_u6jw00e3ey3p_n.png","starNum":1},
+            {"bookNo":85,"lv":36,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":0,"shipName":"朝潮","statusImg":"i/i_69ex6r4uutp3_n.png","starNum":5},
+            {"bookNo":85,"lv":36,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":1,"shipName":"朝潮改","statusImg":"i/i_umacfn9qcwp1_n.png","starNum":3}
+          ]
+          """
+
+        {res, results} = AdmiralStatsParser.parse_character_list_info(json, version)
+
+        expect res |> to(eq(:ok))
+        expect results.size |> to(eq(3))
+
+        result = Enum.at(results, 0)
+        expect result.book_no |> to(eq(11))
+        expect result.lv |> to(eq(20))
+        expect result.ship_type |> to(eq("駆逐艦"))
+        expect result.ship_sort_no |> to(eq(1800))
+        expect result.remodel_lv |> to(eq(0))
+        expect result.ship_name |> to(eq("吹雪"))
+        expect result.status_img |> to(eq("i/i_u6jw00e3ey3p_n.png"))
+        expect result.star_num |> to(eq(1))
+
+        result = Enum.at(results, 1)
+        expect result.book_no |> to(eq(85))
+        expect result.lv |> to(eq(36))
+        expect result.ship_type |> to(eq("駆逐艦"))
+        expect result.ship_sort_no |> to(eq(1800))
+        expect result.remodel_lv |> to(eq(0))
+        expect result.ship_name |> to(eq("朝潮"))
+        expect result.status_img |> to(eq("i/i_69ex6r4uutp3_n.png"))
+        expect result.star_num |> to(eq(5))
+
+        result = Enum.at(results, 2)
+        expect result.book_no |> to(eq(85))
+        expect result.lv |> to(eq(36))
+        expect result.ship_type |> to(eq("駆逐艦"))
+        expect result.ship_sort_no |> to(eq(1800))
+        expect result.remodel_lv |> to(eq(1))
+        expect result.ship_name |> to(eq("朝潮改"))
+        expect result.status_img |> to(eq("i/i_umacfn9qcwp1_n.png"))
+        expect result.star_num |> to(eq(3))
+      end
+    end
+  end
+
+  # 艦娘一覧は、version 5 で各艦娘が装備中のアイテムが追加された
+  describe "parse_character_list_info(json, 5)" do
+    it "returns CharacterListInfo[]" do
+      # 朝潮、朝潮改、鈴谷、鈴谷改のデータ
+      json = """
+         [
+           {"bookNo":85,"lv":97,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":0,"shipName":"朝潮","statusImg":"i/i_69ex6r4uutp3_n.png","starNum":5,"shipClass":"朝潮型","shipClassIndex":1,"tcImg":"s/tc_85_69ex6r4uutp3.jpg","expPercent":97,"maxHp":16,"realHp":16,"damageStatus":"NORMAL","slotNum":2,"slotEquipName":["","","",""],"slotAmount":[0,0,0,0],"slotDisp":["NONE","NONE","NONE","NONE"],"slotImg":["","","",""]},
+           {"bookNo":85,"lv":97,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":1,"shipName":"朝潮改","statusImg":"i/i_umacfn9qcwp1_n.png","starNum":5,"shipClass":"朝潮型","shipClassIndex":1,"tcImg":"s/tc_85_umacfn9qcwp1.jpg","expPercent":97,"maxHp":31,"realHp":31,"damageStatus":"NORMAL","slotNum":3,"slotEquipName":["10cm高角砲＋高射装置","10cm高角砲＋高射装置","61cm四連装(酸素)魚雷",""],"slotAmount":[0,0,0,0],"slotDisp":["NONE","NONE","NONE","NONE"],"slotImg":["equip_icon_26_rv74l134q7an.png","equip_icon_26_rv74l134q7an.png","equip_icon_5_c4bcdscek33o.png",""]},
+           {"bookNo":124,"lv":70,"shipType":"重巡洋艦","shipSortNo":1500,"remodelLv":0,"shipName":"鈴谷","statusImg":"i/i_zrr1yq3annrq_n.png","starNum":5,"shipClass":"最上型","shipClassIndex":3,"tcImg":"s/tc_124_2uejd60gndj3.jpg","expPercent":4,"maxHp":40,"realHp":40,"damageStatus":"NORMAL","slotNum":3,"slotEquipName":["","","",""],"slotAmount":[2,2,2,0],"slotDisp":["NOT_EQUIPPED_AIRCRAFT","NOT_EQUIPPED_AIRCRAFT","NOT_EQUIPPED_AIRCRAFT","NONE"],"slotImg":["","","",""]},
+           {"bookNo":129,"lv":70,"shipType":"航空巡洋艦","shipSortNo":1400,"remodelLv":1,"shipName":"鈴谷改","statusImg":"i/i_6cc94esr14nz_n.png","starNum":5,"shipClass":"最上型","shipClassIndex":3,"tcImg":"s/tc_129_7k4atc4mguna.jpg","expPercent":4,"maxHp":50,"realHp":50,"damageStatus":"NORMAL","slotNum":4,"slotEquipName":["20.3cm(3号)連装砲","瑞雲","15.5cm三連装副砲","三式弾"],"slotAmount":[5,6,5,6],"slotDisp":["NOT_EQUIPPED_AIRCRAFT","EQUIPPED_AIRCRAFT","NOT_EQUIPPED_AIRCRAFT","NOT_EQUIPPED_AIRCRAFT"],"slotImg":["equip_icon_2_n8b0sex6xclf.png","equip_icon_10_lpoysb3zk6s4.png","equip_icon_4_mgy58yrghven.png","equip_icon_13_jdkmrexetpvn.png"]}
+         ]
+         """
+
+      {res, results} = AdmiralStatsParser.parse_character_list_info(json, 5)
+
+      expect res |> to(eq(:ok))
+      expect results.size |> to(eq(4))
+
+      result = Enum.at(results, 0)
+      expect result.book_no |> to(eq(85))
+      expect result.lv |> to(eq(97))
+      expect result.ship_type |> to(eq("駆逐艦"))
+      expect result.ship_sort_no |> to(eq(1800))
+      expect result.remodel_lv |> to(eq(0))
+      expect result.ship_name |> to(eq("朝潮"))
+      expect result.status_img |> to(eq("i/i_69ex6r4uutp3_n.png"))
+      expect result.star_num |> to(eq(5))
+      expect result.ship_class |> to(eq("朝潮型"))
+      expect result.ship_class_index |> to(eq(1))
+      expect result.tc_img |> to(eq("s/tc_85_69ex6r4uutp3.jpg"))
+      expect result.exp_percent |> to(eq(97))
+      expect result.max_hp |> to(eq(16))
+      expect result.real_hp |> to(eq(16))
+      expect result.damage_status |> to(eq("NORMAL"))
+      expect result.slot_num |> to(eq(2))
+      expect result.slot_equip_name |> to(eq(["", "", "", ""]))
+      expect result.slot_amount |> to(eq([0, 0, 0, 0]))
+      expect result.slot_disp |> to(eq(~w(NONE NONE NONE NONE)))
+      expect result.slot_img |> to(eq(["", "", "", ""]))
+
+      result = Enum.at(results, 1)
+      expect result.book_no |> to(eq(85))
+      expect result.lv |> to(eq(97))
+      expect result.ship_type |> to(eq("駆逐艦"))
+      expect result.ship_sort_no |> to(eq(1800))
+      expect result.remodel_lv |> to(eq(1))
+      expect result.ship_name |> to(eq("朝潮改"))
+      expect result.status_img |> to(eq("i/i_umacfn9qcwp1_n.png"))
+      expect result.star_num |> to(eq(5))
+      expect result.ship_class |> to(eq("朝潮型"))
+      expect result.ship_class_index |> to(eq(1))
+      expect result.tc_img |> to(eq("s/tc_85_umacfn9qcwp1.jpg"))
+      expect result.exp_percent |> to(eq(97))
+      expect result.max_hp |> to(eq(31))
+      expect result.real_hp |> to(eq(31))
+      expect result.damage_status |> to(eq("NORMAL"))
+      expect result.slot_num |> to(eq(3))
+      expect result.slot_equip_name |> to(eq(["10cm高角砲＋高射装置", "10cm高角砲＋高射装置", "61cm四連装(酸素)魚雷", ""]))
+      expect result.slot_amount |> to(eq([0, 0, 0, 0]))
+      expect result.slot_disp |> to(eq(~w(NONE NONE NONE NONE)))
+      expect result.slot_img |> to(eq(["equip_icon_26_rv74l134q7an.png", "equip_icon_26_rv74l134q7an.png", "equip_icon_5_c4bcdscek33o.png", ""]))
+
+      result = Enum.at(results, 2)
+      expect result.book_no |> to(eq(124))
+      expect result.lv |> to(eq(70))
+      expect result.ship_type |> to(eq("重巡洋艦"))
+      expect result.ship_sort_no |> to(eq(1500))
+      expect result.remodel_lv |> to(eq(0))
+      expect result.ship_name |> to(eq("鈴谷"))
+      expect result.status_img |> to(eq("i/i_zrr1yq3annrq_n.png"))
+      expect result.star_num |> to(eq(5))
+      expect result.ship_class |> to(eq("最上型"))
+      expect result.ship_class_index |> to(eq(3))
+      expect result.tc_img |> to(eq("s/tc_124_2uejd60gndj3.jpg"))
+      expect result.exp_percent |> to(eq(4))
+      expect result.max_hp |> to(eq(40))
+      expect result.real_hp |> to(eq(40))
+      expect result.damage_status |> to(eq("NORMAL"))
+      expect result.slot_num |> to(eq(3))
+      expect result.slot_equip_name |> to(eq(["", "", "", ""]))
+      expect result.slot_amount |> to(eq([2, 2, 2, 0]))
+      expect result.slot_disp |> to(eq(~w(NOT_EQUIPPED_AIRCRAFT NOT_EQUIPPED_AIRCRAFT NOT_EQUIPPED_AIRCRAFT NONE)))
+      expect result.slot_img |> to(eq(["", "", "", ""]))
+
+      # {"bookNo":129,"lv":70,"shipType":"航空巡洋艦","shipSortNo":1400,"remodelLv":1,"shipName":"鈴谷改",
+      # "statusImg":"i/i_6cc94esr14nz_n.png","starNum":5,"shipClass":"最上型","shipClassIndex":3,
+      # "tcImg":"s/tc_129_7k4atc4mguna.jpg","expPercent":4,"maxHp":50,"realHp":50,"damageStatus":"NORMAL",
+      # "slotNum":4,"slotEquipName":["20.3cm(3号)連装砲","瑞雲","15.5cm三連装副砲","三式弾"],"slotAmount":[5,6,5,6],
+      # "slotDisp":["NOT_EQUIPPED_AIRCRAFT","EQUIPPED_AIRCRAFT","NOT_EQUIPPED_AIRCRAFT","NOT_EQUIPPED_AIRCRAFT"],
+      # "slotImg":["equip_icon_2_n8b0sex6xclf.png","equip_icon_10_lpoysb3zk6s4.png","equip_icon_4_mgy58yrghven.png","equip_icon_13_jdkmrexetpvn.png"]}]
+      result = Enum.at(results, 3)
+      expect result.book_no |> to(eq(129))
+      expect result.lv |> to(eq(70))
+      expect result.ship_type |> to(eq("航空巡洋艦"))
+      expect result.ship_sort_no |> to(eq(1400))
+      expect result.remodel_lv |> to(eq(1))
+      expect result.ship_name |> to(eq("鈴谷改"))
+      expect result.status_img |> to(eq("i/i_6cc94esr14nz_n.png"))
+      expect result.star_num |> to(eq(5))
+      expect result.ship_class |> to(eq("最上型"))
+      expect result.ship_class_index |> to(eq(3))
+      expect result.tc_img |> to(eq("s/tc_129_7k4atc4mguna.jpg"))
+      expect result.exp_percent |> to(eq(4))
+      expect result.max_hp |> to(eq(50))
+      expect result.real_hp |> to(eq(50))
+      expect result.damage_status |> to(eq("NORMAL"))
+      expect result.slot_num |> to(eq(4))
+      expect result.slot_equip_name |> to(eq(["20.3cm(3号)連装砲", "瑞雲", "15.5cm三連装副砲", "三式弾"]))
+      expect result.slot_amount |> to(eq([5, 6, 5, 6]))
+      expect result.slot_disp |> to(eq(~w(NOT_EQUIPPED_AIRCRAFT EQUIPPED_AIRCRAFT NOT_EQUIPPED_AIRCRAFT NOT_EQUIPPED_AIRCRAFT)))
+      expect result.slot_img |> to(eq(~w(equip_icon_2_n8b0sex6xclf.png equip_icon_10_lpoysb3zk6s4.png equip_icon_4_mgy58yrghven.png equip_icon_13_jdkmrexetpvn.png)))
     end
   end
 end
