@@ -6,6 +6,8 @@ defmodule AdmiralStatsParser do
   alias AdmiralStatsParser.Parser.PersonalBasicInfoParser
   alias AdmiralStatsParser.Parser.TcBookInfoParser
   alias AdmiralStatsParser.Parser.CharacterListInfoParser
+  alias AdmiralStatsParser.Parser.EventInfoParser
+  alias AdmiralStatsParser.Summarizer.EventInfoSummarizer
 
   # 各 API version の開始時刻
   # 艦これアーケードは朝 7:00 から稼働するため、開始時刻は 7:00 であると想定する。
@@ -126,6 +128,62 @@ defmodule AdmiralStatsParser do
         CharacterListInfoParser.parse(json, 2)
       version == 5 ->
         CharacterListInfoParser.parse(json, 3)
+      true ->
+        {:error, "unsupported API version"}
+    end
+  end
+
+  @doc """
+  イベント海域情報をパースし、その結果を格納した構造体を返します。
+
+  ## パラメータ
+
+    - json: JSON 文字列
+    - version: API version
+
+  ## 返り値
+
+    {:ok, EventInfo.t} |
+    {:error, error_msg}
+  """
+  def parse_event_info(json, version) do
+    cond do
+      Enum.member?(1..3, version) ->
+        {:error, "API version #{version} does not support event info"}
+      Enum.member?(4..5, version) ->
+        EventInfoParser.parse(json, 1)
+      true ->
+        {:error, "unsupported API version"}
+    end
+  end
+
+  @doc """
+  イベント海域情報のリストを受け取り、そのサマリを格納したマップを返します。
+
+  ## パラメータ
+
+    - event_info_list: EventInfo のリスト
+    - level: 難易度を表す文字列
+    - version: API version
+
+  ## 返り値
+
+    {:ok, %{}} |
+    {:error, error_msg}
+  """
+  def summarize_event_info(event_info_list, level, version) do
+    cond do
+      Enum.member?(1..3, version) ->
+        {:error, "API version #{version} does not support event info"}
+      Enum.member?(4..5, version) ->
+        %{
+            opened: EventInfoSummarizer.opened?(event_info_list, level),
+            all_cleared: EventInfoSummarizer.all_cleared?(event_info_list, level),
+            current_loop_counts: EventInfoSummarizer.current_loop_counts(event_info_list, level),
+            cleared_loop_counts: EventInfoSummarizer.cleared_loop_counts(event_info_list, level),
+            cleared_stage_no: EventInfoSummarizer.cleared_stage_no(event_info_list, level),
+            current_military_gauge_left: EventInfoSummarizer.current_military_gauge_left(event_info_list, level)
+        }
       true ->
         {:error, "unsupported API version"}
     end

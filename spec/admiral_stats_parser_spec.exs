@@ -460,4 +460,148 @@ defmodule AdmiralStatsParserSpec do
       expect result.slot_img |> to(eq(~w(equip_icon_2_n8b0sex6xclf.png equip_icon_10_lpoysb3zk6s4.png equip_icon_4_mgy58yrghven.png equip_icon_13_jdkmrexetpvn.png)))
     end
   end
+
+  # API version 1 〜 3 にはイベント海域情報が存在しなかった
+  describe "parse_event_info(json, 1..3)" do
+    it "returns {:error, error_msg}" do
+      for version <- 1..3 do
+        json = """
+          [
+            {"areaId":1000,"areaSubId":1,"level":"HEI","areaKind":"NORMAL","stageImageName":"area_14yzzpb2ab.png","stageMissionName":"前哨戦","stageMissionInfo":"敵泊地へ強襲作戦が発令された！\n主作戦に先立ち、敵泊地海域付近の\n偵察を実施せよ！","requireGp":300,"limitSec":240,"rewardList":[{"rewardType":"FIRST","dataId":0,"kind":"ROOM_ITEM_COIN","value":50},{"rewardType":"FIRST","dataId":1,"kind":"RESULT_POINT","value":500},{"rewardType":"SECOND","dataId":0,"kind":"RESULT_POINT","value":200}],"stageDropItemInfo":["SMALLBOX","MEDIUMBOX","SMALLREC","NONE"],"sortieLimit":false,"areaClearState":"CLEAR","militaryGaugeStatus":"BREAK","eneMilitaryGaugeVal":1000,"militaryGaugeLeft":0,"bossStatus":"NONE","loopCount":1},
+            {"areaId":1000,"areaSubId":5,"level":"HEI","areaKind":"SWEEP","stageImageName":"area_0555h7ae9d.png","stageMissionName":"？","stageMissionInfo":"？","requireGp":0,"limitSec":0,"rewardList":[{"dataId":0,"kind":"NONE","value":0}],"stageDropItemInfo":["UNKNOWN","NONE","NONE","NONE"],"sortieLimit":false,"areaClearState":"NOTCLEAR","militaryGaugeStatus":"NONE","eneMilitaryGaugeVal":0,"militaryGaugeLeft":0,"bossStatus":"NONE","loopCount":1}
+          ]
+          """
+
+        {res, error_msg} = AdmiralStatsParser.parse_event_info(json, version)
+        expect res |> to(eq(:error))
+        expect error_msg |> to(eq("API version #{version} does not support event info"))
+      end
+    end
+  end
+
+  # イベント海域情報は version 4 〜 5 で仕様が同じ
+  describe "parse_event_info(json, 4..5)" do
+    it "returns EventInfo[]" do
+      for version <- 4..5 do
+        # E-1 クリア、E-5 未クリア
+        json = """
+          [
+            {"areaId":1000,"areaSubId":1,"level":"HEI","areaKind":"NORMAL","stageImageName":"area_14yzzpb2ab.png","stageMissionName":"前哨戦","stageMissionInfo":"敵泊地へ強襲作戦が発令された！\n主作戦に先立ち、敵泊地海域付近の\n偵察を実施せよ！","requireGp":300,"limitSec":240,"rewardList":[{"rewardType":"FIRST","dataId":0,"kind":"ROOM_ITEM_COIN","value":50},{"rewardType":"FIRST","dataId":1,"kind":"RESULT_POINT","value":500},{"rewardType":"SECOND","dataId":0,"kind":"RESULT_POINT","value":200}],"stageDropItemInfo":["SMALLBOX","MEDIUMBOX","SMALLREC","NONE"],"sortieLimit":false,"areaClearState":"CLEAR","militaryGaugeStatus":"BREAK","eneMilitaryGaugeVal":1000,"militaryGaugeLeft":0,"bossStatus":"NONE","loopCount":1},
+            {"areaId":1000,"areaSubId":5,"level":"HEI","areaKind":"SWEEP","stageImageName":"area_0555h7ae9d.png","stageMissionName":"？","stageMissionInfo":"？","requireGp":0,"limitSec":0,"rewardList":[{"dataId":0,"kind":"NONE","value":0}],"stageDropItemInfo":["UNKNOWN","NONE","NONE","NONE"],"sortieLimit":false,"areaClearState":"NOTCLEAR","militaryGaugeStatus":"NONE","eneMilitaryGaugeVal":0,"militaryGaugeLeft":0,"bossStatus":"NONE","loopCount":1}
+          ]
+          """
+
+        {res, results} = AdmiralStatsParser.parse_event_info(json, version)
+
+        expect res |> to(eq(:ok))
+        expect Enum.count(results) |> to(eq(2))
+
+        result = Enum.at(0)
+        expect result.area_id |> to(eq(1000))
+        expect result.area_sub_id |> to(eq(1))
+        expect result.level |> to(eq("HEI"))
+        expect result.area_kind |> to(eq("NORMAL"))
+        expect result.stage_image_name |> to(eq("area_14yzzpb2ab.png"))
+        expect result.stage_mission_name |> to(eq("前哨戦"))
+        expect result.stage_mission_info |> to(eq("敵泊地へ強襲作戦が発令された！\n主作戦に先立ち、敵泊地海域付近の\n偵察を実施せよ！"))
+        expect result.require_gp |> to(eq(300))
+        expect result.limit_sec |> to(eq(240))
+        expect result.reward_list.size |> to(eq(3))
+        expect result.reward_list[0].reward_type |> to(eq("FIRST"))
+        expect result.reward_list[0].data_id |> to(eq(0))
+        expect result.reward_list[0].kind |> to(eq("ROOM_ITEM_COIN"))
+        expect result.reward_list[0].value |> to(eq(50))
+        expect result.reward_list[1].reward_type |> to(eq("FIRST"))
+        expect result.reward_list[1].data_id |> to(eq(1))
+        expect result.reward_list[1].kind |> to(eq("RESULT_POINT"))
+        expect result.reward_list[1].value |> to(eq(500))
+        expect result.reward_list[2].reward_type |> to(eq("SECOND"))
+        expect result.reward_list[2].data_id |> to(eq(0))
+        expect result.reward_list[2].kind |> to(eq("RESULT_POINT"))
+        expect result.reward_list[2].value |> to(eq(200))
+        expect result.stage_drop_item_info.size |> to(eq(4))
+        expect result.stage_drop_item_info[0] |> to(eq("SMALLBOX"))
+        expect result.stage_drop_item_info[1] |> to(eq("MEDIUMBOX"))
+        expect result.stage_drop_item_info[2] |> to(eq("SMALLREC"))
+        expect result.stage_drop_item_info[3] |> to(eq("NONE"))
+        expect result.sortie_limit |> to(eq(false))
+        expect result.area_clear_state |> to(eq("CLEAR"))
+        expect result.military_gauge_status |> to(eq("BREAK"))
+        expect result.ene_military_gauge_val |> to(eq(1000))
+        expect result.military_gauge_left |> to(eq(0))
+        expect result.boss_status |> to(eq("NONE"))
+        expect result.loop_count |> to(eq(1))
+
+        result = Enum.at(1)
+        expect result.area_id |> to(eq(1000))
+        expect result.area_sub_id |> to(eq(5))
+        expect result.level |> to(eq("HEI"))
+        expect result.area_kind |> to(eq("SWEEP"))
+        expect result.stage_image_name |> to(eq("area_0555h7ae9d.png"))
+        expect result.stage_mission_name |> to(eq("？"))
+        expect result.stage_mission_info |> to(eq("？"))
+        expect result.require_gp |> to(eq(0))
+        expect result.limit_sec |> to(eq(0))
+        expect result.reward_list.size |> to(eq(1))
+        expect result.reward_list[0].data_id |> to(eq(0))
+        expect result.reward_list[0].kind |> to(eq("NONE"))
+        expect result.reward_list[0].value |> to(eq(0))
+        expect result.stage_drop_item_info.size |> to(eq(4))
+        expect result.stage_drop_item_info[0] |> to(eq("UNKNOWN"))
+        expect result.stage_drop_item_info[1] |> to(eq("NONE"))
+        expect result.stage_drop_item_info[2] |> to(eq("NONE"))
+        expect result.stage_drop_item_info[3] |> to(eq("NONE"))
+        expect result.sortie_limit |> to(eq(false))
+        expect result.area_clear_state |> to(eq("NOTCLEAR"))
+        expect result.military_gauge_status |> to(eq("NONE"))
+        expect result.ene_military_gauge_val |> to(eq(0))
+        expect result.military_gauge_left |> to(eq(0))
+        expect result.boss_status |> to(eq("NONE"))
+        expect result.loop_count |> to(eq(1))
+      end
+    end
+  end
+
+  # イベント海域情報は version 4 〜 5 で仕様が同じ
+  describe "parse_event_info(\"[]\", 4..5)" do
+    it "returns summary" do
+      for version <- 4..5 do
+        # イベントを開催していない期間は、空の配列が返される
+        json = "[]"
+
+        # 引数が空の配列の場合、返り値も空の配列になる
+        {res, result} = AdmiralStatsParser.parse_event_info(json, version)
+
+        expect res |> to(eq(:ok))
+        expect result |> to(eq([]))
+      end
+    end
+  end
+
+  # イベント海域情報は version 4 〜 5 で仕様が同じ
+  describe "summarize_event_info(json, 4..5)" do
+    it "returns summary" do
+      for version <- 4..5 do
+        # E-1 クリア、E-5 未クリア
+        json = """
+          [
+            {"areaId":1000,"areaSubId":1,"level":"HEI","areaKind":"NORMAL","stageImageName":"area_14yzzpb2ab.png","stageMissionName":"前哨戦","stageMissionInfo":"敵泊地へ強襲作戦が発令された！\n主作戦に先立ち、敵泊地海域付近の\n偵察を実施せよ！","requireGp":300,"limitSec":240,"rewardList":[{"rewardType":"FIRST","dataId":0,"kind":"ROOM_ITEM_COIN","value":50},{"rewardType":"FIRST","dataId":1,"kind":"RESULT_POINT","value":500},{"rewardType":"SECOND","dataId":0,"kind":"RESULT_POINT","value":200}],"stageDropItemInfo":["SMALLBOX","MEDIUMBOX","SMALLREC","NONE"],"sortieLimit":false,"areaClearState":"CLEAR","militaryGaugeStatus":"BREAK","eneMilitaryGaugeVal":1000,"militaryGaugeLeft":0,"bossStatus":"NONE","loopCount":1},
+            {"areaId":1000,"areaSubId":5,"level":"HEI","areaKind":"SWEEP","stageImageName":"area_0555h7ae9d.png","stageMissionName":"？","stageMissionInfo":"？","requireGp":0,"limitSec":0,"rewardList":[{"dataId":0,"kind":"NONE","value":0}],"stageDropItemInfo":["UNKNOWN","NONE","NONE","NONE"],"sortieLimit":false,"areaClearState":"NOTCLEAR","militaryGaugeStatus":"NONE","eneMilitaryGaugeVal":0,"militaryGaugeLeft":0,"bossStatus":"NONE","loopCount":1}
+          ]
+          """
+
+        {res, result} = AdmiralStatsParser.parse_event_info(json, version)
+        expect res |> to(eq(:ok))
+        expect Enum.count(result) |> to(eq(2))
+
+        hei_results = AdmiralStatsParser.summarize_event_info(result, "HEI", version)
+        expect hei_results.opened |> to(be_true())
+        expect hei_results.all_cleared |> to(be_false())
+        expect hei_results.current_loop_counts |> to(eq(1))
+        expect hei_results.cleared_loop_counts |> to(eq(0))
+        expect hei_results.cleared_stage_no |> to(eq(1))
+        expect hei_results.current_military_gauge_left |> to(eq(0))
+      end
+    end
+  end
 end
