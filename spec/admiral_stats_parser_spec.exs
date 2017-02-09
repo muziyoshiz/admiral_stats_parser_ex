@@ -55,7 +55,7 @@ defmodule AdmiralStatsParserSpec do
   end
 
   describe "parse_personal_basic_info(json, 1)" do
-    it "returns PersonalBasicInfo" do
+    it "returns {:ok, PersonalBasicInfo.t}" do
       json = """
         {"admiralName":"ABCDEFGH","fuel":838,"ammo":974,"steel":482,"bauxite":129,"bucket":7,"level":5,"roomItemCoin":0}
         """
@@ -79,7 +79,7 @@ defmodule AdmiralStatsParserSpec do
   end
 
   describe "parse_personal_basic_info(json_without_admiral_name, 1)" do
-    it "returns PersonalBasicInfo" do
+    it "returns {:ok, PersonalBasicInfo.t}" do
       json = """
         {"fuel":838,"ammo":974,"steel":482,"bauxite":129,"bucket":7,"level":5,"roomItemCoin":0}
         """
@@ -104,7 +104,7 @@ defmodule AdmiralStatsParserSpec do
 
   # admiralName を含まない場合のテスト
   describe "parse_personal_basic_info(json_without_admiral_name, 2..5)" do
-    it "returns PersonalBasicInfo" do
+    it "returns {:ok, PersonalBasicInfo.t}" do
       for version <- 2..5 do
         json = """
           {"fuel":6750,"ammo":6183,"steel":7126,"bauxite":6513,"bucket":46,"level":32,"roomItemCoin":82,"resultPoint":"3571","rank":"圏外","titleId":7,"materialMax":7200,"strategyPoint":915}
@@ -131,7 +131,7 @@ defmodule AdmiralStatsParserSpec do
 
   # admiralNameを含む場合のテスト
   describe "parse_personal_basic_info(json, 2..5)" do
-    it "returns PersonalBasicInfo" do
+    it "returns {:ok, PersonalBasicInfo.t}" do
       for version <- 2..5 do
         json = """
           {"admiralName":"ABCDEFGH","fuel":6750,"ammo":6183,"steel":7126,"bauxite":6513,"bucket":46,"level":32,"roomItemCoin":82,"resultPoint":"3571","rank":"圏外","titleId":7,"materialMax":7200,"strategyPoint":915}
@@ -157,7 +157,7 @@ defmodule AdmiralStatsParserSpec do
   end
 
   describe "parse_tc_book_info(json, 1)" do
-    it "returns TcBookInfo[]" do
+    it "returns {:ok, [TcBookInfo.t]}" do
       json = """
         [{"bookNo":1,"shipClass":"","shipClassIndex":-1,"shipType":"","shipName":"未取得","cardIndexImg":"","cardImgList":[],"variationNum":0,"acquireNum":0},{"bookNo":2,"shipClass":"長門型","shipClassIndex":2,"shipType":"戦艦","shipName":"陸奥","cardIndexImg":"s/tc_2_tjpm66z1epc6.jpg","cardImgList":["s/tc_2_tjpm66z1epc6.jpg","","","","",""],"variationNum":6,"acquireNum":1}]
         """
@@ -197,7 +197,7 @@ defmodule AdmiralStatsParserSpec do
 
   # 艦娘図鑑は version 2 〜 5 で仕様が同じ
   describe "parse_tc_book_info(json, 2..5)" do
-    it "returns TcBookInfo[]" do
+    it "returns {:ok, [TcBookInfo.t]}" do
       for version <- 2..5 do
         json = """
           [{"bookNo":1,"shipClass":"長門型","shipClassIndex":1,"shipType":"戦艦","shipName":"長門","cardIndexImg":"s/tc_1_d7ju63kolamj.jpg","cardImgList":["","","s/tc_1_gk42czm42s3p.jpg","","",""],"variationNum":6,"acquireNum":1,"lv":23,"statusImg":["i/i_d7ju63kolamj_n.png"]},{"bookNo":5,"shipClass":"","shipClassIndex":-1,"shipType":"","shipName":"未取得","cardIndexImg":"","cardImgList":[],"variationNum":0,"acquireNum":0,"lv":0,"statusImg":[]}]
@@ -254,7 +254,7 @@ defmodule AdmiralStatsParserSpec do
   end
 
   describe "parse_character_list_info(json, 2)" do
-    it "returns CharacterListInfo[]" do
+    it "returns {:ok, [CharacterListInfo.t]}" do
       json = """
         [
           {"bookNo":11,"lv":20,"shipType":"駆逐艦","shipSortNo":1800,"remodelLv":0,"shipName":"吹雪","statusImg":"i/i_u6jw00e3ey3p_n.png"},
@@ -299,7 +299,7 @@ defmodule AdmiralStatsParserSpec do
 
   # 艦娘一覧は version 3 〜 4 で仕様が同じ
   describe "parse_character_list_info(json, 3..4)" do
-    it "returns CharacterListInfo[]" do
+    it "returns {:ok, [CharacterListInfo.t]}" do
       for version <- 3..4 do
         json = """
           [
@@ -349,7 +349,7 @@ defmodule AdmiralStatsParserSpec do
 
   # 艦娘一覧は、version 5 で各艦娘が装備中のアイテムが追加された
   describe "parse_character_list_info(json, 5)" do
-    it "returns CharacterListInfo[]" do
+    it "returns {:ok, [CharacterListInfo.t]}" do
       # 朝潮、朝潮改、鈴谷、鈴谷改のデータ
       json = """
          [
@@ -481,7 +481,7 @@ defmodule AdmiralStatsParserSpec do
 
   # イベント海域情報は version 4 〜 5 で仕様が同じ
   describe "parse_event_info(json, 4..5)" do
-    it "returns EventInfo[]" do
+    it "returns {:ok, [EventInfo.t]}" do
       for version <- 4..5 do
         # E-1 クリア、E-5 未クリア
         json = """
@@ -496,7 +496,7 @@ defmodule AdmiralStatsParserSpec do
         expect res |> to(eq(:ok))
         expect Enum.count(results) |> to(eq(2))
 
-        result = Enum.at(0)
+        result = Enum.at(results, 0)
         expect result.area_id |> to(eq(1000))
         expect result.area_sub_id |> to(eq(1))
         expect result.level |> to(eq("HEI"))
@@ -506,24 +506,24 @@ defmodule AdmiralStatsParserSpec do
         expect result.stage_mission_info |> to(eq("敵泊地へ強襲作戦が発令された！\n主作戦に先立ち、敵泊地海域付近の\n偵察を実施せよ！"))
         expect result.require_gp |> to(eq(300))
         expect result.limit_sec |> to(eq(240))
-        expect result.reward_list.size |> to(eq(3))
-        expect result.reward_list[0].reward_type |> to(eq("FIRST"))
-        expect result.reward_list[0].data_id |> to(eq(0))
-        expect result.reward_list[0].kind |> to(eq("ROOM_ITEM_COIN"))
-        expect result.reward_list[0].value |> to(eq(50))
-        expect result.reward_list[1].reward_type |> to(eq("FIRST"))
-        expect result.reward_list[1].data_id |> to(eq(1))
-        expect result.reward_list[1].kind |> to(eq("RESULT_POINT"))
-        expect result.reward_list[1].value |> to(eq(500))
-        expect result.reward_list[2].reward_type |> to(eq("SECOND"))
-        expect result.reward_list[2].data_id |> to(eq(0))
-        expect result.reward_list[2].kind |> to(eq("RESULT_POINT"))
-        expect result.reward_list[2].value |> to(eq(200))
-        expect result.stage_drop_item_info.size |> to(eq(4))
-        expect result.stage_drop_item_info[0] |> to(eq("SMALLBOX"))
-        expect result.stage_drop_item_info[1] |> to(eq("MEDIUMBOX"))
-        expect result.stage_drop_item_info[2] |> to(eq("SMALLREC"))
-        expect result.stage_drop_item_info[3] |> to(eq("NONE"))
+        expect Enum.count(result.reward_list) |> to(eq(3))
+        expect Enum.at(result.reward_list, 0).reward_type |> to(eq("FIRST"))
+        expect Enum.at(result.reward_list, 0).data_id |> to(eq(0))
+        expect Enum.at(result.reward_list, 0).kind |> to(eq("ROOM_ITEM_COIN"))
+        expect Enum.at(result.reward_list, 0).value |> to(eq(50))
+        expect Enum.at(result.reward_list, 1).reward_type |> to(eq("FIRST"))
+        expect Enum.at(result.reward_list, 1).data_id |> to(eq(1))
+        expect Enum.at(result.reward_list, 1).kind |> to(eq("RESULT_POINT"))
+        expect Enum.at(result.reward_list, 1).value |> to(eq(500))
+        expect Enum.at(result.reward_list, 2).reward_type |> to(eq("SECOND"))
+        expect Enum.at(result.reward_list, 2).data_id |> to(eq(0))
+        expect Enum.at(result.reward_list, 2).kind |> to(eq("RESULT_POINT"))
+        expect Enum.at(result.reward_list, 2).value |> to(eq(200))
+        expect Enum.count(result.stage_drop_item_info) |> to(eq(4))
+        expect Enum.at(result.stage_drop_item_info, 0) |> to(eq("SMALLBOX"))
+        expect Enum.at(result.stage_drop_item_info, 1) |> to(eq("MEDIUMBOX"))
+        expect Enum.at(result.stage_drop_item_info, 2) |> to(eq("SMALLREC"))
+        expect Enum.at(result.stage_drop_item_info, 3) |> to(eq("NONE"))
         expect result.sortie_limit |> to(eq(false))
         expect result.area_clear_state |> to(eq("CLEAR"))
         expect result.military_gauge_status |> to(eq("BREAK"))
@@ -532,7 +532,7 @@ defmodule AdmiralStatsParserSpec do
         expect result.boss_status |> to(eq("NONE"))
         expect result.loop_count |> to(eq(1))
 
-        result = Enum.at(1)
+        result = Enum.at(results, 1)
         expect result.area_id |> to(eq(1000))
         expect result.area_sub_id |> to(eq(5))
         expect result.level |> to(eq("HEI"))
@@ -542,15 +542,15 @@ defmodule AdmiralStatsParserSpec do
         expect result.stage_mission_info |> to(eq("？"))
         expect result.require_gp |> to(eq(0))
         expect result.limit_sec |> to(eq(0))
-        expect result.reward_list.size |> to(eq(1))
-        expect result.reward_list[0].data_id |> to(eq(0))
-        expect result.reward_list[0].kind |> to(eq("NONE"))
-        expect result.reward_list[0].value |> to(eq(0))
-        expect result.stage_drop_item_info.size |> to(eq(4))
-        expect result.stage_drop_item_info[0] |> to(eq("UNKNOWN"))
-        expect result.stage_drop_item_info[1] |> to(eq("NONE"))
-        expect result.stage_drop_item_info[2] |> to(eq("NONE"))
-        expect result.stage_drop_item_info[3] |> to(eq("NONE"))
+        expect Enum.count(result.reward_list) |> to(eq(1))
+        expect Enum.at(result.reward_list, 0).data_id |> to(eq(0))
+        expect Enum.at(result.reward_list, 0).kind |> to(eq("NONE"))
+        expect Enum.at(result.reward_list, 0).value |> to(eq(0))
+        expect Enum.count(result.stage_drop_item_info) |> to(eq(4))
+        expect Enum.at(result.stage_drop_item_info, 0) |> to(eq("UNKNOWN"))
+        expect Enum.at(result.stage_drop_item_info, 1) |> to(eq("NONE"))
+        expect Enum.at(result.stage_drop_item_info, 2) |> to(eq("NONE"))
+        expect Enum.at(result.stage_drop_item_info, 3) |> to(eq("NONE"))
         expect result.sortie_limit |> to(eq(false))
         expect result.area_clear_state |> to(eq("NOTCLEAR"))
         expect result.military_gauge_status |> to(eq("NONE"))
@@ -564,7 +564,7 @@ defmodule AdmiralStatsParserSpec do
 
   # イベント海域情報は version 4 〜 5 で仕様が同じ
   describe "parse_event_info(\"[]\", 4..5)" do
-    it "returns summary" do
+    it "returns {:ok, []}" do
       for version <- 4..5 do
         # イベントを開催していない期間は、空の配列が返される
         json = "[]"
@@ -580,7 +580,7 @@ defmodule AdmiralStatsParserSpec do
 
   # イベント海域情報は version 4 〜 5 で仕様が同じ
   describe "summarize_event_info(json, 4..5)" do
-    it "returns summary" do
+    it "returns {:ok, summary}" do
       for version <- 4..5 do
         # E-1 クリア、E-5 未クリア
         json = """
