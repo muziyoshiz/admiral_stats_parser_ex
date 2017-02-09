@@ -266,7 +266,7 @@ defmodule AdmiralStatsParserSpec do
       {res, results} = AdmiralStatsParser.parse_character_list_info(json, 2)
 
       expect res |> to(eq(:ok))
-      expect results.size |> to(eq(3))
+      expect Enum.count(results) |> to(eq(3))
 
       result = Enum.at(results, 0)
       expect result.book_no |> to(eq(11))
@@ -312,7 +312,7 @@ defmodule AdmiralStatsParserSpec do
         {res, results} = AdmiralStatsParser.parse_character_list_info(json, version)
 
         expect res |> to(eq(:ok))
-        expect results.size |> to(eq(3))
+        expect Enum.count(results) |> to(eq(3))
 
         result = Enum.at(results, 0)
         expect result.book_no |> to(eq(11))
@@ -363,7 +363,7 @@ defmodule AdmiralStatsParserSpec do
       {res, results} = AdmiralStatsParser.parse_character_list_info(json, 5)
 
       expect res |> to(eq(:ok))
-      expect results.size |> to(eq(4))
+      expect Enum.count(results) |> to(eq(4))
 
       result = Enum.at(results, 0)
       expect result.book_no |> to(eq(85))

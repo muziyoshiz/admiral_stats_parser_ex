@@ -27,8 +27,8 @@ defmodule AdmiralStatsParser.Model.TcBookInfo do
     card_index_img: nil,
 
     # 取得済み画像のファイル名
-    # Array
-    # 未取得の場合は、空の Array
+    # List
+    # 未取得の場合は、空の List
     card_img_list: nil,
 
     # 画像のバリエーション数
@@ -44,7 +44,7 @@ defmodule AdmiralStatsParser.Model.TcBookInfo do
     lv: nil,
 
     # 艦娘のステータス画像（横長の画像）のファイル名 (From API version 2)
-    # Array
-    # 未取得の場合は、空の Array
+    # List
+    # 未取得の場合は、空の List
     status_img: nil
 end

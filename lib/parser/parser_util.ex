@@ -19,6 +19,21 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
   end
 
   @doc """
+  与えられた引数が、整数のリストの場合に true を返します。
+
+  ## パラメータ
+
+    - term: 検査対象
+
+  ## 返り値
+
+    boolean
+  """
+  def is_integer_list(term) do
+    is_list_of(term, &is_integer/1)
+  end
+
+  @doc """
   与えられた引数が、表示可能な文字列のリストの場合に true を返します。
 
   ## パラメータ
@@ -30,11 +45,27 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
     boolean
   """
   def is_string_list(term) do
+    is_list_of(term, &is_string/1)
+  end
+
+  @doc """
+  与えられた引数がリストで、かつリストの要素がすべて func に対して true を返す場合に、この関数も true を返します。
+
+  ## パラメータ
+
+    - term: 検査対象
+    - func: 検査関数
+
+  ## 返り値
+
+    boolean
+  """
+  def is_list_of(term, func) do
     cond do
       is_list(term) ->
-        case Enum.count(term) == 0 do
-          true -> true
-          false -> Enum.count(Enum.reject(term, &is_string/1)) == 0
+        case Enum.count(term) do
+          0 -> true
+          _ -> Enum.count(Enum.reject(term, func)) == 0
         end
       true ->
         false

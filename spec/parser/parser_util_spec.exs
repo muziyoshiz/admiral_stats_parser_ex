@@ -31,6 +31,29 @@ defmodule AdmiralStats.Parser.ParserUtilSpec do
     end
   end
 
+  describe "is_integer_list(term)" do
+    it "returns true" do
+      expect is_integer_list([]) |> to(be_true())
+      expect is_integer_list([0]) |> to(be_true())
+      expect is_integer_list([1]) |> to(be_true())
+      expect is_integer_list([-1]) |> to(be_true())
+      expect is_integer_list([0, 1, -1]) |> to(be_true())
+
+      # 空のリストとみなされるため true
+      expect is_integer_list('') |> to(be_true())
+    end
+
+    it "returns false" do
+      expect is_integer_list(1) |> to(be_false())
+      expect is_integer_list("") |> to(be_false())
+      expect is_integer_list(true) |> to(be_false())
+      expect is_integer_list(false) |> to(be_false())
+      expect is_integer_list(nil) |> to(be_false())
+      expect is_integer_list(["1"]) |> to(be_false())
+      expect is_integer_list(["1", 2, 3]) |> to(be_false())
+    end
+  end
+
   describe "is_string_list(term)" do
     it "returns true" do
       expect is_string_list([]) |> to(be_true())
