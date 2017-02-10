@@ -18,10 +18,6 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
     is_binary(term) and String.printable?(term)
   end
 
-  def is_event_info_reward(term) do
-    false
-  end
-
   @doc """
   与えられた引数が、整数のリストの場合に true を返します。
 
@@ -50,10 +46,6 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
   """
   def is_string_list(term) do
     is_list_of(term, &is_string/1)
-  end
-
-  def is_event_info_reward_list(term) do
-    is_list_of(term, &is_event_info_reward/1)
   end
 
   @doc """

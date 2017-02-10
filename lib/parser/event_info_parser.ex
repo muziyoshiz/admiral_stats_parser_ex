@@ -4,6 +4,7 @@ defmodule AdmiralStatsParser.Parser.EventInfoParser do
   """
 
   alias AdmiralStatsParser.Parser.ParserUtil
+  alias AdmiralStatsParser.Parser.EventInfoParser
   alias AdmiralStatsParser.Model.EventInfo
 
   # API version ごとの必須キーを格納したマップ
@@ -19,7 +20,7 @@ defmodule AdmiralStatsParser.Parser.EventInfoParser do
       "stage_image_name" => &ParserUtil.is_string/1,
       "stage_mission_name" => &ParserUtil.is_string/1,
       "stage_mission_info" => &ParserUtil.is_string/1,
-      "reward_list" => &ParserUtil.is_event_info_reward_list/1,
+      "reward_list" => &EventInfoParser.is_event_info_reward_list/1,
       "stage_drop_item_info" => &ParserUtil.is_string_list/1,
       "area_clear_state" => &ParserUtil.is_string/1,
       "military_gauge_status" => &ParserUtil.is_string/1,
@@ -57,6 +58,41 @@ defmodule AdmiralStatsParser.Parser.EventInfoParser do
       {:error, _} ->
         {:error, "Failed to decode json"}
     end
+  end
+
+  @doc """
+  与えられた引数が、Reward に変換可能なマップの場合に true を返します。
+  このメソッドを private にすると、@mandatory_key 内で参照できないため、public で定義します。
+
+  ## パラメータ
+
+    - term: 検査対象
+
+  ## 返り値
+
+    boolean
+  """
+  def is_event_info_reward(term) do
+    # 引数がマップで、かつ Reward に必須のキーを持つかどうかを確認
+    # "rewardType" は任意のキーなので、検査しない
+    is_map(term) and Map.has_key?(term, "dataId") and
+      Map.has_key?(term, "kind") and Map.has_key?(term, "value")
+  end
+
+  @doc """
+  与えられた引数が、Reward に変換可能なマップのリストの場合に true を返します。
+  このメソッドを private にすると、@mandatory_key 内で参照できないため、public で定義します。
+
+  ## パラメータ
+
+    - term: 検査対象
+
+  ## 返り値
+
+    boolean
+  """
+  def is_event_info_reward_list(term) do
+    ParserUtil.is_list_of(term, &EventInfoParser.is_event_info_reward/1)
   end
 
   # json_objects からすべてのオブジェクトを取り出し終えたら、成功のレスポンスを返す
