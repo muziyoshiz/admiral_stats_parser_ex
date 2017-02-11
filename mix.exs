@@ -7,8 +7,8 @@ defmodule AdmiralStatsParser.Mixfile do
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     description: description,
-     package: package,
+     description: description(),
+     package: package(),
      deps: deps(),
      preferred_cli_env: [espec: :test]]
   end
@@ -50,7 +50,8 @@ defmodule AdmiralStatsParser.Mixfile do
       # https://github.com/bitwalker/timex
       # https://hexdocs.pm/timex/getting-started.html
       {:timex, "~> 3.0"},
-      {:espec, "~> 1.2.2", only: :test}
+      {:ex_doc, "~> 0.12", only: :dev},
+      {:espec, "~> 1.2.2", only: :test},
     ]
   end
 end
