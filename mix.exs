@@ -4,11 +4,27 @@ defmodule AdmiralStatsParser.Mixfile do
   def project do
     [app: :admiral_stats_parser,
      version: "0.1.0",
-     elixir: "~> 1.3",
+     elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     description: description,
+     package: package,
      deps: deps(),
      preferred_cli_env: [espec: :test]]
+  end
+
+  defp description do
+    """
+    Parser for admiral stats JSON data exported from kancolle-arcade.net (Elixir version)
+    """
+  end
+
+  defp package do
+    [
+       maintainer: ["Masahiro Yoshizawa"],
+       licenses: ["MIT"],
+       links: %{"GitHub" => "https://github.com/muziyoshiz/admiral_stats_parser_ex"}
+     ]
   end
 
   # Configuration for the OTP application
