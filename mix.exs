@@ -21,7 +21,7 @@ defmodule AdmiralStatsParser.Mixfile do
 
   defp package do
     [
-       maintainer: ["Masahiro Yoshizawa"],
+       maintainers: ["Masahiro Yoshizawa"],
        licenses: ["MIT"],
        links: %{"GitHub" => "https://github.com/muziyoshiz/admiral_stats_parser_ex"}
      ]
