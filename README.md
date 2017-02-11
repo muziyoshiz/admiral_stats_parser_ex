@@ -55,6 +55,7 @@ $ mix espec
 ## Release
 
 ```
+$ mix hex.publish
 ```
 
 ## Contributing
