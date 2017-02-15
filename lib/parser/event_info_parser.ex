@@ -11,21 +11,21 @@ defmodule AdmiralStatsParser.Parser.EventInfoParser do
     1 => %{
       "area_id" => &is_integer/1,
       "area_sub_id" => &is_integer/1,
-      "level" => &ParserUtil.is_string/1,
-      "area_kind" => &ParserUtil.is_string/1,
+      "level" => &ParserUtil.string?/1,
+      "area_kind" => &ParserUtil.string?/1,
       "limit_sec" => &is_integer/1,
       "require_gp" => &is_integer/1,
       "sortie_limit" => &is_boolean/1,
-      "stage_image_name" => &ParserUtil.is_string/1,
-      "stage_mission_name" => &ParserUtil.is_string/1,
-      "stage_mission_info" => &ParserUtil.is_string/1,
+      "stage_image_name" => &ParserUtil.string?/1,
+      "stage_mission_name" => &ParserUtil.string?/1,
+      "stage_mission_info" => &ParserUtil.string?/1,
       "reward_list" => &__MODULE__.is_event_info_reward_list/1,
-      "stage_drop_item_info" => &ParserUtil.is_string_list/1,
-      "area_clear_state" => &ParserUtil.is_string/1,
-      "military_gauge_status" => &ParserUtil.is_string/1,
+      "stage_drop_item_info" => &ParserUtil.string_list?/1,
+      "area_clear_state" => &ParserUtil.string?/1,
+      "military_gauge_status" => &ParserUtil.string?/1,
       "ene_military_gauge_val" => &is_integer/1,
       "military_gauge_left" => &is_integer/1,
-      "boss_status" => &ParserUtil.is_string/1,
+      "boss_status" => &ParserUtil.string?/1,
       "loop_count" => &is_integer/1,
     }
   }
@@ -91,7 +91,7 @@ defmodule AdmiralStatsParser.Parser.EventInfoParser do
     boolean
   """
   def is_event_info_reward_list(term) do
-    ParserUtil.is_list_of(term, &__MODULE__.is_event_info_reward/1)
+    ParserUtil.list_of?(term, &__MODULE__.is_event_info_reward/1)
   end
 
   # json_objects からすべてのオブジェクトを取り出し終えたら、成功のレスポンスを返す

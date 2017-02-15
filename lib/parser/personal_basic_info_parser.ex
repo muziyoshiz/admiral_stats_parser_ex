@@ -25,8 +25,8 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
       "bucket" => &is_integer/1,
       "level" => &is_integer/1,
       "room_item_coin" => &is_integer/1,
-      "result_point" => &ParserUtil.is_string/1,
-      "rank" => &ParserUtil.is_string/1,
+      "result_point" => &ParserUtil.string?/1,
+      "rank" => &ParserUtil.string?/1,
       "title_id" => &is_integer/1,
       "material_max" => &is_integer/1,
       "strategy_point" => &is_integer/1,
@@ -37,10 +37,10 @@ defmodule AdmiralStatsParser.Parser.PersonalBasicInfoParser do
   @optional_keys %{
     1 => %{
       # 元のデータには必ず提督名が含まれるが、データ解析の上では不要のため、オプションとする
-      "admiral_name" => &ParserUtil.is_string/1,
+      "admiral_name" => &ParserUtil.string?/1,
     },
     2 => %{
-      "admiral_name" => &ParserUtil.is_string/1,
+      "admiral_name" => &ParserUtil.string?/1,
     }
   }
 

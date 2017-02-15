@@ -14,7 +14,7 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
 
     boolean
   """
-  def is_string(term) do
+  def string?(term) do
     is_binary(term) and String.printable?(term)
   end
 
@@ -29,8 +29,8 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
 
     boolean
   """
-  def is_integer_list(term) do
-    is_list_of(term, &is_integer/1)
+  def integer_list?(term) do
+    list_of?(term, &is_integer/1)
   end
 
   @doc """
@@ -44,8 +44,8 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
 
     boolean
   """
-  def is_string_list(term) do
-    is_list_of(term, &is_string/1)
+  def string_list?(term) do
+    list_of?(term, &string?/1)
   end
 
   @doc """
@@ -60,7 +60,7 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
 
     boolean
   """
-  def is_list_of(term, func) do
+  def list_of?(term, func) do
     cond do
       is_list(term) ->
         case Enum.count(term) do

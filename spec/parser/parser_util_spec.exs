@@ -15,66 +15,66 @@ defmodule AdmiralStats.Parser.ParserUtilSpec do
   import AdmiralStatsParser.Parser.ParserUtil
   alias AdmiralStats.Parser.ParserUtilSpec.TestStruct
 
-  describe "is_string(term)" do
+  describe "string?(term)" do
     it "returns true" do
-      expect is_string("") |> to(be_true())
-      expect is_string("ABC") |> to(be_true())
-      expect is_string("日本語") |> to(be_true())
+      expect string?("") |> to(be_true())
+      expect string?("ABC") |> to(be_true())
+      expect string?("日本語") |> to(be_true())
     end
 
     it "returns false" do
-      expect is_string(1) |> to(be_false())
-      expect is_string('') |> to(be_false())
-      expect is_string(true) |> to(be_false())
-      expect is_string(false) |> to(be_false())
-      expect is_string(nil) |> to(be_false())
+      expect string?(1) |> to(be_false())
+      expect string?('') |> to(be_false())
+      expect string?(true) |> to(be_false())
+      expect string?(false) |> to(be_false())
+      expect string?(nil) |> to(be_false())
     end
   end
 
-  describe "is_integer_list(term)" do
+  describe "integer_list?(term)" do
     it "returns true" do
-      expect is_integer_list([]) |> to(be_true())
-      expect is_integer_list([0]) |> to(be_true())
-      expect is_integer_list([1]) |> to(be_true())
-      expect is_integer_list([-1]) |> to(be_true())
-      expect is_integer_list([0, 1, -1]) |> to(be_true())
+      expect integer_list?([]) |> to(be_true())
+      expect integer_list?([0]) |> to(be_true())
+      expect integer_list?([1]) |> to(be_true())
+      expect integer_list?([-1]) |> to(be_true())
+      expect integer_list?([0, 1, -1]) |> to(be_true())
 
       # 空のリストとみなされるため true
-      expect is_integer_list('') |> to(be_true())
+      expect integer_list?('') |> to(be_true())
     end
 
     it "returns false" do
-      expect is_integer_list(1) |> to(be_false())
-      expect is_integer_list("") |> to(be_false())
-      expect is_integer_list(true) |> to(be_false())
-      expect is_integer_list(false) |> to(be_false())
-      expect is_integer_list(nil) |> to(be_false())
-      expect is_integer_list(["1"]) |> to(be_false())
-      expect is_integer_list(["1", 2, 3]) |> to(be_false())
+      expect integer_list?(1) |> to(be_false())
+      expect integer_list?("") |> to(be_false())
+      expect integer_list?(true) |> to(be_false())
+      expect integer_list?(false) |> to(be_false())
+      expect integer_list?(nil) |> to(be_false())
+      expect integer_list?(["1"]) |> to(be_false())
+      expect integer_list?(["1", 2, 3]) |> to(be_false())
     end
   end
 
-  describe "is_string_list(term)" do
+  describe "string_list?(term)" do
     it "returns true" do
-      expect is_string_list([]) |> to(be_true())
-      expect is_string_list([""]) |> to(be_true())
-      expect is_string_list(["1"]) |> to(be_true())
-      expect is_string_list(["ABC"]) |> to(be_true())
-      expect is_string_list(["日本語"]) |> to(be_true())
-      expect is_string_list(["1", "ABC", "日本語"]) |> to(be_true())
+      expect string_list?([]) |> to(be_true())
+      expect string_list?([""]) |> to(be_true())
+      expect string_list?(["1"]) |> to(be_true())
+      expect string_list?(["ABC"]) |> to(be_true())
+      expect string_list?(["日本語"]) |> to(be_true())
+      expect string_list?(["1", "ABC", "日本語"]) |> to(be_true())
 
       # 空のリストとみなされるため true
-      expect is_string_list('') |> to(be_true())
+      expect string_list?('') |> to(be_true())
     end
 
     it "returns false" do
-      expect is_string_list(1) |> to(be_false())
-      expect is_string_list("") |> to(be_false())
-      expect is_string_list(true) |> to(be_false())
-      expect is_string_list(false) |> to(be_false())
-      expect is_string_list(nil) |> to(be_false())
-      expect is_string_list([1]) |> to(be_false())
-      expect is_string_list(["ABC", 1, "日本語"]) |> to(be_false())
+      expect string_list?(1) |> to(be_false())
+      expect string_list?("") |> to(be_false())
+      expect string_list?(true) |> to(be_false())
+      expect string_list?(false) |> to(be_false())
+      expect string_list?(nil) |> to(be_false())
+      expect string_list?([1]) |> to(be_false())
+      expect string_list?(["ABC", 1, "日本語"]) |> to(be_false())
     end
   end
 
@@ -95,14 +95,14 @@ defmodule AdmiralStats.Parser.ParserUtilSpec do
     let :mandatory_keys do
       %{
         "man_int" => &is_integer/1,
-        "man_str" => &is_string/1,
+        "man_str" => &string?/1,
       }
     end
 
     let :optional_keys do
       %{
         "opt_int" => &is_integer/1,
-        "opt_str" => &is_string/1,
+        "opt_str" => &string?/1,
       }
     end
 
@@ -177,14 +177,14 @@ defmodule AdmiralStats.Parser.ParserUtilSpec do
     let :mandatory_keys do
       %{
         "man_int" => &is_integer/1,
-        "man_str" => &is_string/1,
+        "man_str" => &string?/1,
       }
     end
 
     let :optional_keys do
       %{
         "opt_int" => &is_integer/1,
-        "opt_str" => &is_string/1,
+        "opt_str" => &string?/1,
       }
     end
 
@@ -196,7 +196,7 @@ defmodule AdmiralStats.Parser.ParserUtilSpec do
 
     let :less_optional_keys do
       %{
-        "opt_str" => &is_string/1,
+        "opt_str" => &string?/1,
       }
     end
 

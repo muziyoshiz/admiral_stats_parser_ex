@@ -10,27 +10,27 @@ defmodule AdmiralStatsParser.Parser.TcBookInfoParser do
   @mandatory_keys %{
     1 => %{
       "book_no" => &is_integer/1,
-      "ship_class" => &ParserUtil.is_string/1,
+      "ship_class" => &ParserUtil.string?/1,
       "ship_class_index" => &is_integer/1,
-      "ship_type" => &ParserUtil.is_string/1,
-      "ship_name" => &ParserUtil.is_string/1,
-      "card_index_img" => &ParserUtil.is_string/1,
-      "card_img_list" => &ParserUtil.is_string_list/1,
+      "ship_type" => &ParserUtil.string?/1,
+      "ship_name" => &ParserUtil.string?/1,
+      "card_index_img" => &ParserUtil.string?/1,
+      "card_img_list" => &ParserUtil.string_list?/1,
       "variation_num" => &is_integer/1,
       "acquire_num" => &is_integer/1,
     },
     2 => %{
       "book_no" => &is_integer/1,
-      "ship_class" => &ParserUtil.is_string/1,
+      "ship_class" => &ParserUtil.string?/1,
       "ship_class_index" => &is_integer/1,
-      "ship_type" => &ParserUtil.is_string/1,
-      "ship_name" => &ParserUtil.is_string/1,
-      "card_index_img" => &ParserUtil.is_string/1,
-      "card_img_list" => &ParserUtil.is_string_list/1,
+      "ship_type" => &ParserUtil.string?/1,
+      "ship_name" => &ParserUtil.string?/1,
+      "card_index_img" => &ParserUtil.string?/1,
+      "card_img_list" => &ParserUtil.string_list?/1,
       "variation_num" => &is_integer/1,
       "acquire_num" => &is_integer/1,
       "lv" => &is_integer/1,
-      "status_img" => &ParserUtil.is_string_list/1,
+      "status_img" => &ParserUtil.string_list?/1,
     }
   }
 
