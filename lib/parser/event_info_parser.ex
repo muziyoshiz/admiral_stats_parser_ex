@@ -4,7 +4,6 @@ defmodule AdmiralStatsParser.Parser.EventInfoParser do
   """
 
   alias AdmiralStatsParser.Parser.ParserUtil
-  alias AdmiralStatsParser.Parser.EventInfoParser
   alias AdmiralStatsParser.Model.EventInfo
 
   # API version ごとの必須キーを格納したマップ
@@ -20,7 +19,7 @@ defmodule AdmiralStatsParser.Parser.EventInfoParser do
       "stage_image_name" => &ParserUtil.is_string/1,
       "stage_mission_name" => &ParserUtil.is_string/1,
       "stage_mission_info" => &ParserUtil.is_string/1,
-      "reward_list" => &EventInfoParser.is_event_info_reward_list/1,
+      "reward_list" => &__MODULE__.is_event_info_reward_list/1,
       "stage_drop_item_info" => &ParserUtil.is_string_list/1,
       "area_clear_state" => &ParserUtil.is_string/1,
       "military_gauge_status" => &ParserUtil.is_string/1,
@@ -92,18 +91,17 @@ defmodule AdmiralStatsParser.Parser.EventInfoParser do
     boolean
   """
   def is_event_info_reward_list(term) do
-    ParserUtil.is_list_of(term, &EventInfoParser.is_event_info_reward/1)
+    ParserUtil.is_list_of(term, &__MODULE__.is_event_info_reward/1)
   end
 
   # json_objects からすべてのオブジェクトを取り出し終えたら、成功のレスポンスを返す
-  defp create_structs(objects, [], _, _) do
-    {:ok, objects}
-  end
+  defp create_structs(objects, [], _, _), do: {:ok, objects}
 
   # json_objects の1個目のオブジェクトを取り出し、構造体に変換
   defp create_structs(objects, json_objects, mandatory_keys, optional_keys) do
     [json_obj | rest_json_objects] = json_objects
-    {res, obj} = json_obj
+    {res, obj} =
+      json_obj
       |> ParserUtil.validate_keys(mandatory_keys, optional_keys)
       |> ParserUtil.create_struct(%EventInfo{}, mandatory_keys, optional_keys)
       |> create_reward_list()

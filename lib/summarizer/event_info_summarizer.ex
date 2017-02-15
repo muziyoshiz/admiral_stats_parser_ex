@@ -58,9 +58,7 @@ defmodule AdmiralStatsParser.Summarizer.EventInfoSummarizer do
   end
 
   # すべてのステージをクリア済みの場合は、最後のステージの番号を返します。
-  defp last_cleared_stage_no([], prev_stage_no) do
-    prev_stage_no
-  end
+  defp last_cleared_stage_no([], prev_stage_no), do: prev_stage_no
 
   # 最後に area_clear_stage が "NOTCLEAR" ではなかったステージの番号を返します。
   # event_info_list は area_sub_id の順にソートされているものとします。
@@ -114,7 +112,8 @@ defmodule AdmiralStatsParser.Summarizer.EventInfoSummarizer do
   """
   def opened?(event_info_list, level) do
     # 指定されたレベルの情報を、サブ海域番号の小さい順に取り出し
-    list = event_info_list
+    list =
+      event_info_list
       |> Enum.filter(&(&1.level == level))
       |> Enum.sort_by(&(&1.area_sub_id))
 

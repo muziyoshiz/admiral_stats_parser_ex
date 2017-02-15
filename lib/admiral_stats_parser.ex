@@ -23,9 +23,7 @@ defmodule AdmiralStatsParser do
   過去に何度か変更されており、今後も変更される可能性があります。
   このツールでは、kancolle-arcade.net が返す JSON メッセージの形式のことを API version と呼びます。
   """
-  def get_latest_api_version() do
-    5
-  end
+  def get_latest_api_version(), do: 5
 
   @doc """
   与えられたエクスポート時刻から推測される API version を返します。

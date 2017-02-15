@@ -3,44 +3,46 @@ defmodule AdmiralStatsParser.Model.PersonalBasicInfo do
   基本情報
   """
 
-  # 提督名
-  defstruct admiral_name: nil,
+  defstruct [
+    # 提督名
+    :admiral_name,
 
     # 燃料
-    fuel: nil,
+    :fuel,
 
     # 弾薬
-    ammo: nil,
+    :ammo,
 
     # 鋼材
-    steel: nil,
+    :steel,
 
     # ボーキサイト
-    bauxite: nil,
+    :bauxite,
 
     # 修復バケツ
-    bucket: nil,
+    :bucket,
 
     # 艦隊司令部Level
-    level: nil,
+    :level,
 
     # 家具コイン
-    room_item_coin: nil,
+    :room_item_coin,
 
     # 戦果 (From API version 2)
     # 戦果は数値だが、なぜか STRING 型で返される。どういう場合に文字列が返されるのか？
-    result_point: nil,
+    :result_point,
 
     # 暫定順位 (From API version 2)
     # 数値または「圏外」
-    rank: nil,
+    :rank,
 
     # 階級を表す数値 (From API version 2)
-    title_id: nil,
+    :title_id,
 
     # 最大備蓄可能各資源量 (From API version 2)
-    material_max: nil,
+    :material_max,
 
     # 戦略ポイント (From API version 2)
-    strategy_point: nil
+    :strategy_point,
+  ]
 end

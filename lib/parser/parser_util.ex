@@ -85,7 +85,10 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
   """
   def to_camel_case(snake_case) do
     [head | tails ] = String.split(snake_case, "_")
-    tail = Enum.map(tails, &String.capitalize/1) |> Enum.join
+    tail =
+      tails
+      |> Enum.map(&String.capitalize/1)
+      |> Enum.join
     head <> tail
   end
 
@@ -162,9 +165,10 @@ defmodule AdmiralStatsParser.Parser.ParserUtil do
     case validation_res do
       {:ok, json_obj} ->
         # 結果を格納する構造体
-        obj = obj |>
-              set_mandatory_values(json_obj, Map.keys(mandatory_keys)) |>
-              set_optional_values(json_obj, Map.keys(optional_keys))
+        obj =
+          obj
+          |> set_mandatory_values(json_obj, Map.keys(mandatory_keys))
+          |> set_optional_values(json_obj, Map.keys(optional_keys))
         {:ok, obj}
       _ ->
         validation_res

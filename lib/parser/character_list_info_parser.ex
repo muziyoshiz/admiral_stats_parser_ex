@@ -90,7 +90,8 @@ defmodule AdmiralStatsParser.Parser.CharacterListInfoParser do
   # json_objects の1個目のオブジェクトを取り出し、構造体に変換
   defp create_structs(objects, json_objects, mandatory_keys, optional_keys) do
     [json_obj | rest_json_objects] = json_objects
-    {res, obj} = json_obj
+    {res, obj} =
+      json_obj
       |> ParserUtil.validate_keys(mandatory_keys, optional_keys)
       |> ParserUtil.create_struct(%CharacterListInfo{}, mandatory_keys, optional_keys)
     case res do
